@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Holpin — Coordiná tus viajes</title>
+<style>
+:root{--bg:#fbfbfd;--card:#fff;--tx:#1d1d1f;--tx2:#6e6e73;--line:#d2d2d7;--blue:#0071e3;--red:#ff3b30;--green:#1d9b4a;--glass:rgba(251,251,253,.8);--fill:#f5f5f7;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#000;--card:#1c1c1e;--tx:#f5f5f7;--tx2:#a1a1a6;--line:#38383a;--blue:#2997ff;--green:#30d158;--glass:rgba(0,0,0,.72);--fill:#2c2c2e;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#000;--card:#1c1c1e;--tx:#f5f5f7;--tx2:#a1a1a6;--line:#38383a;--blue:#2997ff;--green:#30d158;--glass:rgba(0,0,0,.72);--fill:#2c2c2e;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--glass);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px)}
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;display:flex;align-items:center;gap:14px;padding:10px 18px;background:var(--glass);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-bottom:1px solid var(--line)}
+.nav b{font-size:19px;letter-spacing:-.02em}
+#tabs{display:flex;gap:4px;flex:1;overflow-x:auto}
+#tabs button{border:0;background:none;color:var(--tx2);font:inherit;font-size:14px;padding:6px 10px;border-radius:980px;cursor:pointer;position:relative;white-space:nowrap}
+#tabs button.on{color:var(--tx);background:var(--fill)}
+.dot{background:var(--red);color:#fff;border-radius:980px;font-size:11px;padding:1px 6px;margin-left:4px}
+.avbtn{border:0;background:none;padding:0;cursor:pointer}
+.av{width:40px;height:40px;border-radius:50%;object-fit:cover;background:var(--fill);flex:none;display:block}
+.avbtn .av{width:32px;height:32px}
+main{max-width:760px;margin:0 auto;padding:0 18px 60px}
+.hero{text-align:center;padding:44px 0 26px}
+h1{font-size:clamp(34px,8vw,56px);line-height:1.05;letter-spacing:-.03em;margin:0 0 12px;font-weight:700}
+.hero p{color:var(--tx2);font-size:19px;margin:0 auto 24px;max-width:520px}
+.seg{display:inline-flex;background:var(--fill);border-radius:980px;padding:3px}
+.seg button{border:0;background:none;font:inherit;font-size:15px;color:var(--tx);padding:9px 20px;border-radius:980px;cursor:pointer}
+.seg button.on{background:var(--card);box-shadow:0 1px 4px rgba(0,0,0,.18);font-weight:600}
+.panel{background:var(--card);border-radius:22px;padding:20px;box-shadow:0 2px 14px rgba(0,0,0,.06);margin-bottom:16px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:520px){.grid{grid-template-columns:1fr}}
+label{display:block;font-size:12px;color:var(--tx2);margin:0 0 5px 4px}
+input,textarea{width:100%;font:inherit;font-size:16px;color:var(--tx);background:var(--fill);border:1px solid transparent;border-radius:12px;padding:12px 14px;outline:none}
+input:focus,textarea:focus{border-color:var(--blue)}
+.btn{border:0;background:var(--blue);color:#fff;font:inherit;font-size:15px;padding:11px 20px;border-radius:980px;cursor:pointer}
+.btn.sec{background:var(--fill);color:var(--blue)}
+.btn.sm{padding:7px 14px;font-size:14px}
+.btn:disabled{opacity:.4;cursor:default}
+h2{font-size:24px;letter-spacing:-.02em;margin:26px 0 12px}
+.card{background:var(--card);border-radius:22px;padding:18px;margin-bottom:12px;box-shadow:0 2px 14px rgba(0,0,0,.06)}
+.row{display:flex;align-items:center;gap:12px}
+.row .g{flex:1;min-width:0}
+.row small,.meta{color:var(--tx2);font-size:14px}
+.price{font-size:20px;font-weight:600}
+.route{font-size:22px;font-weight:600;letter-spacing:-.02em;margin:14px 0 4px}
+.route i{color:var(--tx2);font-style:normal;margin:0 6px}
+.badge{display:inline-block;background:var(--red);color:#fff;font-size:12px;font-weight:600;padding:3px 10px;border-radius:980px}
+.ok{color:var(--green)}
+.acts{display:flex;gap:8px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.empty{text-align:center;color:var(--tx2);padding:36px 0}
+.msg{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}
+.msg:last-child{border:0}
+.ov{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.ov[hidden]{display:none}
+.sheet{background:var(--card);border-radius:26px;padding:24px;width:100%;max-width:420px;max-height:90%;overflow:auto}
+.sheet h3{margin:0 0 6px;font-size:24px;letter-spacing:-.02em}
+.sheet p{color:var(--tx2);margin:0 0 16px;font-size:15px}
+.pic{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.pic .av{width:72px;height:72px}
+#toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:11px 20px;border-radius:980px;font-size:14px;z-index:40;opacity:0;pointer-events:none;transition:opacity .25s}
+#toast.on{opacity:1}
+</style></head><body>
+<header class="nav"><b>Holpin</b><nav id="tabs"></nav><button class="avbtn" id="meBtn" aria-label="Perfil"></button></header>
+<main>
+<section class="hero"><h1>Viajá acompañado.</h1><p>Encontrá un lugar en un auto o publicá tu viaje entre ciudades y repartí los gastos.</p>
+<div class="seg" id="roleSeg"><button data-r="pasajero">Soy pasajero</button><button data-r="conductor">Soy conductor</button></div></section>
+
+<section id="v-buscar">
+<div class="panel"><div class="grid"><div><label>Salgo desde</label><input id="qFrom" list="cities" placeholder="Ciudad de salida"></div><div><label>Quiero ir a</label><input id="qTo" list="cities" placeholder="Ciudad de destino"></div></div></div>
+<div id="list"></div></section>
+
+<section id="v-publicar" hidden>
+<div class="panel"><h3 style="margin:0 0 14px;font-size:22px">Publicar un viaje</h3>
+<div class="grid"><div><label>Desde</label><input id="pFrom" list="cities" placeholder="Ciudad de salida"></div><div><label>Hasta</label><input id="pTo" list="cities" placeholder="Ciudad de destino"></div>
+<div><label>Fecha</label><input id="pDate" type="date"></div><div><label>Horario de salida</label><input id="pTime" type="time"></div>
+<div><label>Monto por persona ($)</label><input id="pPrice" type="number" min="0" inputmode="numeric" placeholder="12000"></div><div><label>Asientos disponibles</label><input id="pSeats" type="number" min="1" max="8" inputmode="numeric" value="3"></div></div>
+<div class="acts"><button class="btn" id="pub">Publicar viaje</button></div></div>
+<h2>Mis viajes</h2><div id="mine"></div></section>
+
+<section id="v-mensajes" hidden><h2 style="margin-top:0">Mensajes</h2><div class="panel" id="msgs"></div></section>
+</main>
+<datalist id="cities"><option>Buenos Aires</option><option>Córdoba</option><option>Rosario</option><option>Mendoza</option><option>La Plata</option><option>Mar del Plata</option><option>Tucumán</option><option>Salta</option><option>Santa Fe</option><option>Neuquén</option><option>Bariloche</option><option>Paraná</option><option>Posadas</option><option>Corrientes</option><option>San Luis</option><option>Bahía Blanca</option></datalist>
+<div class="ov" id="ov" hidden><div class="sheet" id="sheet"></div></div><div id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+/* 1) Pegá acá los datos de tu proyecto: Supabase > Project Settings > API */
+const SUPABASE_URL='TU_SUPABASE_URL',SUPABASE_ANON_KEY='TU_SUPABASE_ANON_KEY';
+
+const $=s=>document.querySelector(s),H3=3*36e5;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const nrm=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
+const ini=(n,c)=>'data:image/svg+xml;utf8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><rect width="80" height="80" fill="${c}"/><text x="40" y="53" font-size="36" font-family="Arial" fill="#fff" text-anchor="middle">${n[0]}</text></svg>`);
+const fmt=w=>new Date(w).toLocaleString('es-AR',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+const money=n=>'$ '+Number(n).toLocaleString('es-AR');
+const sg={get(k,d){try{return localStorage.getItem(k)||d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),2800)}
+function sheet(h,lock){$('#sheet').innerHTML=h;$('#ov').hidden=false;$('#ov').dataset.lock=lock?1:''}
+function close(){$('#ov').hidden=true}
+$('#ov').onclick=e=>{if(e.target.id==='ov'&&!$('#ov').dataset.lock)close()};
+
+const sb=(window.supabase&&!SUPABASE_URL.startsWith('TU_'))?supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
+let uid=null,ready=false,profs={},trips=[],msgs=[],role=sg.get('holpin_role','pasajero'),view='buscar';
+const dflt=ini('?','#8e8e93');
+const who=id=>{const p=profs[id]||{};return{name:p.name||'Usuario',photo:/^data:image\//.test(p.photo||'')?p.photo:dflt}};
+const meP=()=>uid?profs[uid]:null;
+const live=()=>trips.filter(t=>!(t.soldOutAt&&Date.now()-t.soldOutAt>=H3));
+function left(t){const ms=H3-(Date.now()-t.soldOutAt);return Math.floor(ms/36e5)+' h '+Math.ceil((ms%36e5)/6e4)+' min'}
+const need=()=>{if(!uid){authSheet();return false}if(!meP()){profile(true);return false}return true};
+
+async function load(){
+ const [p,t,m]=await Promise.all([sb.from('profiles').select('id,name,photo'),sb.from('trips').select('*'),uid?sb.from('messages').select('*'):Promise.resolve({data:[]})]);
+ if(p.error||t.error){$('#list').innerHTML='<div class="empty">No se pudieron cargar los datos. Revisá la configuración de Supabase.</div>';return}
+ profs={};(p.data||[]).forEach(x=>profs[x.id]=x);
+ trips=(t.data||[]).map(x=>({id:x.id,driverId:x.driver_id,from:x.origin,to:x.destination,when:x.departs_at,price:x.price,seats:x.seats,left:x.seats_left,soldOutAt:x.sold_out_at?new Date(x.sold_out_at).getTime():null}));
+ msgs=(m.data||[]).map(x=>({id:x.id,fromId:x.from_id,toId:x.to_id,text:x.body,route:x.route||'',ts:new Date(x.created_at).getTime(),read:x.read}));
+ ready=true;renderAll()}
+
+function card(t){
+ const out=t.left<=0,own=t.driverId===uid,w=who(t.driverId);
+ let a='';
+ if(own)a=`<span class="meta">Asientos libres</span><button class="btn sec sm" data-a="dec" data-id="${esc(t.id)}">−</button><b>${t.left}/${t.seats}</b><button class="btn sec sm" data-a="inc" data-id="${esc(t.id)}">+</button><button class="btn sec sm" data-a="del" data-id="${esc(t.id)}" style="margin-left:auto;color:var(--red)">Eliminar</button>`;
+ else a=`<button class="btn sm" data-a="ask" data-id="${esc(t.id)}" ${out?'disabled':''}>¿Sigue disponible?</button>`;
+ return `<article class="card"><div class="row"><img class="av" src="${esc(w.photo)}" alt=""><div class="g"><b>${esc(w.name)}</b><br><small>Conductor</small></div><span class="price">${money(t.price)}</span></div>
+ <div class="route">${esc(t.from)}<i>→</i>${esc(t.to)}</div><div class="meta">Sale ${fmt(t.when)}</div>
+ <div class="meta" style="margin-top:6px">${out?`<span class="badge">Agotado</span> Desaparece en ${left(t)}`:`<span class="ok">${t.left} ${t.left===1?'asiento disponible':'asientos disponibles'}</span>`}</div>
+ <div class="acts">${a}</div></article>`}
+function renderList(){
+ if(!ready)return;
+ const f=nrm($('#qFrom').value),to=nrm($('#qTo').value),n=Date.now();
+ const r=live().filter(t=>new Date(t.when).getTime()>n&&nrm(t.from).includes(f)&&nrm(t.to).includes(to)).sort((a,b)=>a.when<b.when?-1:1);
+ $('#list').innerHTML=r.length?r.map(card).join(''):'<div class="empty">No hay viajes para esa búsqueda.</div>';
+ const m=live().filter(t=>t.driverId===uid);
+ $('#mine').innerHTML=m.length?m.map(card).join(''):'<div class="empty">Todavía no publicaste viajes.</div>'}
+function renderMsgs(){
+ const mine=msgs.sort((a,b)=>b.ts-a.ts);
+ $('#msgs').innerHTML=!uid?'<div class="empty">Iniciá sesión para ver tus mensajes.</div>':mine.length?mine.map(m=>{const rx=m.toId===uid,o=who(rx?m.fromId:m.toId);return `<div class="msg"><img class="av" src="${esc(o.photo)}" alt=""><div><b>${esc(rx?o.name:'Para '+o.name)}</b> <small class="meta">· ${esc(m.route)} · ${rx?'recibido':'enviado'}</small><div>${esc(m.text)}</div></div></div>`}).join(''):'<div class="empty">No tenés mensajes.</div>';
+ renderTabs()}
+function renderTabs(){
+ const un=msgs.filter(m=>m.toId===uid&&!m.read).length;
+ const tabs=[['buscar','Viajes']].concat(role==='conductor'?[['publicar','Publicar']]:[],[['mensajes','Mensajes']]);
+ $('#tabs').innerHTML=tabs.map(([k,l])=>`<button data-v="${k}" class="${view===k?'on':''}">${l}${k==='mensajes'&&un?`<span class="dot">${un}</span>`:''}</button>`).join('');
+ $('#meBtn').innerHTML=meP()?`<img class="av" src="${esc(who(uid).photo)}" alt="">`:'<span class="btn sec sm">Entrar</span>'}
+const renderAll=()=>{renderList();renderMsgs()};
+function show(v){view=v;$('#roleSeg').hidden=v==='publicar';['buscar','publicar','mensajes'].forEach(k=>$('#v-'+k).hidden=k!==v);
+ if(v==='mensajes'&&uid&&msgs.some(m=>m.toId===uid&&!m.read))sb.from('messages').update({read:true}).eq('to_id',uid).eq('read',false).then(()=>load());
+ renderAll()}
+function setRole(r){role=r;sg.set('holpin_role',r);if(r!=='conductor'&&view==='publicar')view='buscar';
+ document.querySelectorAll('#roleSeg button').forEach(b=>b.classList.toggle('on',b.dataset.r===r));show(view)}
+$('#roleSeg').onclick=e=>{const r=e.target.dataset.r;if(!r)return;setRole(r);if(r==='conductor')show('publicar')};
+$('#tabs').onclick=e=>{if(e.target.closest('button'))show(e.target.closest('button').dataset.v)};
+['#qFrom','#qTo'].forEach(s=>$(s).oninput=renderList);
+
+function authSheet(){
+ sheet(`<h3>Entrá a Holpin</h3><p>Creá una cuenta o iniciá sesión para publicar viajes y enviar mensajes.</p>
+ <label>Email</label><input id="aE" type="email" autocomplete="email"><label style="margin-top:10px">Contraseña (mínimo 6 caracteres)</label><input id="aP" type="password" autocomplete="current-password">
+ <div class="acts"><button class="btn" id="aIn">Iniciar sesión</button><button class="btn sec" id="aUp">Crear cuenta</button><button class="btn sec" id="aX">Cerrar</button></div>`);
+ const go=async up=>{const email=$('#aE').value.trim(),password=$('#aP').value;
+  if(!email||password.length<6)return toast('Ingresá un email y una contraseña de 6 o más caracteres');
+  const r=up?await sb.auth.signUp({email,password}):await sb.auth.signInWithPassword({email,password});
+  if(r.error)return toast(r.error.message==='Invalid login credentials'?'Email o contraseña incorrectos':r.error.message);
+  if(up&&!r.data.session)toast('Revisá tu email para confirmar la cuenta')};
+ $('#aIn').onclick=()=>go(false);$('#aUp').onclick=()=>go(true);$('#aX').onclick=close}
+
+function profile(first){
+ const p=meP();let photo=p?p.photo:'';
+ sheet(`<h3>${first?'Creá tu perfil':'Tu perfil'}</h3><p>Para viajar o conducir necesitás un nombre y una foto.</p>
+ <div class="pic"><img class="av" id="pPrev" src="${esc(photo||dflt)}" alt=""><label class="btn sec sm" style="margin:0;cursor:pointer">Elegir foto<input id="pFile" type="file" accept="image/*" hidden></label></div>
+ <label>Nombre</label><input id="pName" value="${p?esc(p.name):''}" placeholder="Tu nombre" maxlength="30">
+ <div class="acts"><button class="btn" id="pSave" disabled>Guardar</button>${first?'':'<button class="btn sec" id="pCancel">Cancelar</button>'}<button class="btn sec" id="pOut" style="margin-left:auto;color:var(--red)">Cerrar sesión</button></div>`,first);
+ const chk=()=>$('#pSave').disabled=!($('#pName').value.trim()&&photo);
+ $('#pName').oninput=chk;chk();
+ if(!first)$('#pCancel').onclick=close;
+ $('#pOut').onclick=async()=>{await sb.auth.signOut();close()};
+ $('#pFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=c.height=160;const s=Math.min(im.width,im.height);c.getContext('2d').drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,160,160);photo=c.toDataURL('image/jpeg',.8);$('#pPrev').src=photo;chk()};im.src=r.result};r.readAsDataURL(f)};
+ $('#pSave').onclick=async()=>{const b=$('#pSave');b.disabled=true;
+  const r=await sb.from('profiles').upsert({id:uid,name:$('#pName').value.trim(),photo});
+  if(r.error){toast('No se pudo guardar el perfil');b.disabled=false;return}
+  close();load()}}
+$('#meBtn').onclick=()=>{if(!sb)return;uid?profile(false):authSheet()};
+
+function ask(t){
+ const w=who(t.driverId);
+ sheet(`<h3>Mensaje a ${esc(w.name)}</h3><p>${esc(t.from)} → ${esc(t.to)} · ${fmt(t.when)}</p>
+ <textarea id="mTxt" rows="4">Hola ${esc(w.name)}, ¿sigue disponible el viaje de ${esc(t.from)} a ${esc(t.to)} del ${fmt(t.when)}?</textarea>
+ <div class="acts"><button class="btn" id="mSend">Enviar</button><button class="btn sec" id="mCancel">Cancelar</button></div>`);
+ $('#mCancel').onclick=close;
+ $('#mSend').onclick=async()=>{const x=$('#mTxt').value.trim();if(!x)return;$('#mSend').disabled=true;
+  const r=await sb.from('messages').insert({trip_id:t.id,from_id:uid,to_id:t.driverId,body:x,route:t.from+' → '+t.to});
+  if(r.error){toast('No se pudo enviar el mensaje');$('#mSend').disabled=false;return}
+  close();toast('Mensaje enviado');load()}}
+
+async function onAct(e){
+ const b=e.target.closest('[data-a]');if(!b)return;const t=trips.find(x=>x.id===b.dataset.id);if(!t)return;
+ const a=b.dataset.a;
+ if(a==='ask')return need()&&ask(t);
+ if(t.driverId!==uid)return;
+ let r;
+ if(a==='del')r=await sb.from('trips').delete().eq('id',t.id);
+ else if(a==='inc'&&t.left<t.seats)r=await sb.from('trips').update({seats_left:t.left+1,sold_out_at:null}).eq('id',t.id);
+ else if(a==='dec'&&t.left>0)r=await sb.from('trips').update({seats_left:t.left-1,sold_out_at:t.left-1===0?new Date().toISOString():null}).eq('id',t.id);
+ if(r&&r.error)toast('No se pudo actualizar');load()}
+$('#list').onclick=onAct;$('#mine').onclick=onAct;
+
+$('#pub').onclick=async()=>{
+ if(!need())return;
+ const v=id=>$(id).value.trim(),from=v('#pFrom'),to=v('#pTo'),d=v('#pDate'),h=v('#pTime'),p=+v('#pPrice'),s=+v('#pSeats');
+ if(!from||!to||!d||!h||!(s>0)||v('#pPrice')==='')return toast('Completá todos los campos');
+ const r=await sb.from('trips').insert({driver_id:uid,origin:from,destination:to,departs_at:new Date(d+'T'+h).toISOString(),price:p,seats:s,seats_left:s});
+ if(r.error)return toast('No se pudo publicar el viaje');
+ ['#pFrom','#pTo','#pDate','#pTime','#pPrice'].forEach(i=>$(i).value='');toast('Viaje publicado');await load();show('buscar')};
+
+function boot(){
+ if(!sb){$('#list').innerHTML='<div class="empty">Falta configurar Supabase: completá SUPABASE_URL y SUPABASE_ANON_KEY en el archivo.</div>';return}
+ $('#list').innerHTML='<div class="empty">Cargando…</div>';
+ sb.auth.onAuthStateChange((ev,s)=>{uid=s&&s.user?s.user.id:null;
+  setTimeout(async()=>{await load();
+   if(uid){if(!$('#ov').hidden&&$('#sheet').querySelector('#aE'))close();if(!meP()&&$('#ov').hidden)profile(true)}},0)});
+ sb.channel('holpin').on('postgres_changes',{event:'*',schema:'public'},()=>load()).subscribe();
+ setInterval(()=>{renderList();if(uid)sb.from('trips').delete().eq('driver_id',uid).lt('sold_out_at',new Date(Date.now()-H3).toISOString()).then(()=>{})},30000)}
+setRole(role);boot();
+</script></body></html>
