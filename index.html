@@ -247,7 +247,7 @@ function card(t,i=0){
  const myReq=requestStatus(t);let a='';
  if(own){
   a='<span class="meta">Asientos libres</span><button class="btn sec sm" data-a="dec" data-id="'+esc(t.id)+'">−</button><b>'+t.left+'/'+t.seats+'</b><button class="btn sec sm" data-a="inc" data-id="'+esc(t.id)+'">+</button>'+
-  (t.completedAt?'<span class="badge" style="background:var(--green)">Finalizado</span>':'<button class="btn sm" data-a="finish" data-id="'+esc(t.id)+'">Finalizar viaje</button>')+
+  (t.completedAt?'<span class="badge" style="background:var(--green)">Finalizado</span>':'<button class="btn sm" data-a="finish" data-id="'+esc(t.id)+'" '+(new Date(t.when).getTime()>Date.now()?'disabled title="Se habilita después del horario de salida"':'')+'>Finalizar viaje</button>')+
   '<button class="btn sec sm" data-a="del" data-id="'+esc(t.id)+'" style="margin-left:auto;color:var(--red)">Eliminar</button>';
  }else if(myReq){
   a=myReq.status==='pending'?'<span class="badge">Postulación enviada</span>':myReq.status==='accepted'?'<span class="badge" style="background:var(--green)">Postulación aceptada</span>':'<span class="meta">Postulación no aceptada</span>';
@@ -422,7 +422,7 @@ async function onAct(e){
  if(a==='ask')return need()&&ask(t);
  if(a==='apply')return applyToTrip(t);
  if(a==='rate')return rateTrip(t);
- if(a==='accept'||a==='reject'){if(t.driverId!==uid)return;const req=tripRequests.find(x=>x.id===b.dataset.rid);if(!req)return;const status=a==='accept'?'accepted':'rejected';const up=await sb.from('trip_requests').update({status}).eq('id',req.id);if(up.error){toast('No se pudo actualizar: '+up.error.message);return}if(a==='accept'){const seat=await sb.from('trips').update({seats_left:Math.max(0,t.left-1)}).eq('id',t.id);if(seat.error){toast('No se pudo actualizar el cupo: '+seat.error.message);return}}toast(a==='accept'?'Pasajero aceptado':'Postulación rechazada');await load();return}
+ if(a==='accept'||a==='reject'){if(t.driverId!==uid)return;const req=tripRequests.find(x=>x.id===b.dataset.rid);if(!req)return;const status=a==='accept'?'accepted':'rejected';const up=await sb.from('trip_requests').update({status}).eq('id',req.id);if(up.error){toast('No se pudo actualizar: '+up.error.message);return}toast(a==='accept'?'Pasajero aceptado':'Postulación rechazada');await load();return}
  if(a==='finish'){if(t.driverId!==uid)return;const up=await sb.from('trips').update({completed_at:new Date().toISOString()}).eq('id',t.id);if(up.error){toast('No se pudo finalizar: '+up.error.message);return}toast('Viaje finalizado. Ya pueden calificarte.');await load();return}
  if(t.driverId!==uid)return;
  if(a==='del'&&!b.dataset.armed)return armDel(b,()=>{});
