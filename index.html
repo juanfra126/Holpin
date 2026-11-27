@@ -210,7 +210,7 @@ function close(){$('#ov').hidden=true}
 $('#ov').onclick=e=>{if(e.target.id==='ov'&&!$('#ov').dataset.lock)close()};
 
 let sb=null;try{if(window.supabase&&/^https:\/\//.test(SUPABASE_URL)&&SUPABASE_ANON_KEY.length>20)sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:window.localStorage}})}catch(e){sb=null}
-let uid=null,ready=false,profs={},trips=[],msgs=[],role=sg.get('holpin_role','pasajero'),view='buscar';
+let uid=null,ready=false,profilesLoaded=false,profs={},trips=[],msgs=[],role=sg.get('holpin_role','pasajero'),view='buscar';
 const dflt=ini('?','#8e8e93');
 const who=id=>{const p=profs[id]||{};return{name:p.name||'Usuario',photo:/^data:image\//.test(p.photo||'')?p.photo:dflt}};
 const meP=()=>uid?profs[uid]:null;
@@ -222,13 +222,14 @@ let loadSeq=0;
 async function load(){
  const my=++loadSeq;
  const [p,t,m]=await Promise.all([sb.from('profiles').select('id,name,photo'),sb.from('trips').select('*'),uid?sb.from('messages').select('*'):Promise.resolve({data:[]})]);
- if(my!==loadSeq)return;
- if(p.error||t.error){$('#list').innerHTML='<div class="empty">No se pudieron cargar los datos. Revisá la configuración de Supabase.</div>';return}
- profs={};(p.data||[]).forEach(x=>profs[x.id]=x);
+ if(my!==loadSeq)return false;
+ if(p.error){profilesLoaded=false;console.error('No se pudieron cargar los perfiles:',p.error);$('#list').innerHTML='<div class="empty">No se pudieron cargar los perfiles. Revisá tu conexión e intentá actualizar.</div>';return false}
+ profs={};(p.data||[]).forEach(x=>profs[x.id]=x);profilesLoaded=true;
+ if(t.error){console.error('No se pudieron cargar los viajes:',t.error);trips=[]}else
  trips=(t.data||[]).map(x=>({id:x.id,driverId:x.driver_id,from:x.origin,to:x.destination,when:x.departs_at,price:x.price,seats:x.seats,left:x.seats_left,soldOutAt:x.sold_out_at?new Date(x.sold_out_at).getTime():null}));
  msgs=(m.data||[]).map(x=>({id:x.id,tripId:x.trip_id,fromId:x.from_id,toId:x.to_id,text:x.body,route:x.route||'',ts:new Date(x.created_at).getTime(),read:x.read}));
  if(m.error&&!window._me){window._me=1;console.error(m.error);toast('No se pudieron cargar los mensajes: '+m.error.message)}
- ready=true;renderAll()}
+ ready=true;renderAll();return true}
 
 const seen=new Set(),lastLeft=new Map();
 function card(t,i=0){
@@ -430,9 +431,9 @@ function boot(){
   else if(q.get('type')==='signup'){
    setTimeout(()=>toast('¡Cuenta confirmada!'),700);
    setTimeout(()=>{if(!uid){toast('Tu cuenta está lista. Iniciá sesión para continuar.');authSheet()}},3000)}}
- sb.auth.onAuthStateChange((ev,s)=>{uid=s&&s.user?s.user.id:null;
-  setTimeout(async()=>{await load();
-   if(uid){if(!pushOn)syncPush(false);if(!$('#ov').hidden&&$('#sheet').querySelector('#aE'))close();if(!meP()&&$('#ov').hidden)profile(true)}},0)});
+ sb.auth.onAuthStateChange((ev,s)=>{uid=s&&s.user?s.user.id:null;profilesLoaded=false;
+  setTimeout(async()=>{const loaded=await load();
+   if(uid){if(!pushOn)syncPush(false);if(!$('#ov').hidden&&$('#sheet').querySelector('#aE'))close();if(loaded&&profilesLoaded&&!meP()&&$('#ov').hidden)profile(true)}},0)});
  sb.channel('holpin').on('postgres_changes',{event:'*',schema:'public'},p=>{
   if(p.table==='messages'&&p.eventType==='INSERT'&&p.new&&uid&&p.new.to_id===uid)notify(p.new);
   load()}).subscribe();
