@@ -453,7 +453,7 @@ async function onAct(e){
  if(t.driverId!==uid)return;
  if(a==='del')return confirmTripCancel(t);
  let r;
- else if(a==='inc'&&t.left<t.seats)r=await sb.from('trips').update({seats_left:t.left+1,sold_out_at:null}).eq('id',t.id);
+ if(a==='inc'&&t.left<t.seats)r=await sb.from('trips').update({seats_left:t.left+1,sold_out_at:null}).eq('id',t.id);
  else if(a==='dec'&&t.left>0)r=await sb.from('trips').update({seats_left:t.left-1,sold_out_at:t.left-1===0?new Date().toISOString():null}).eq('id',t.id);
  if(r&&r.error)toast('No se pudo actualizar');load()}
 $('#list').onclick=onAct;$('#mine').onclick=onAct;
