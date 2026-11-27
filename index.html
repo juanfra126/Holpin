@@ -496,6 +496,47 @@ html,body{-webkit-text-size-adjust:100%;overscroll-behavior-x:none}
 body{touch-action:pan-y}
 button,a,label{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 @media(prefers-reduced-motion:reduce){section.nav-enter-forward,section.nav-enter-back,.nav #tabs button.on svg,.nav #tabs button.on span:not(.dot){animation:none!important}}
+
+/* FIX DEFINITIVO: el blur del header no debe contener la barra fixed */
+@media(max-width:700px){
+ .nav{
+  -webkit-backdrop-filter:none!important;
+  backdrop-filter:none!important;
+  transform:none!important;
+  filter:none!important;
+  perspective:none!important;
+  contain:none!important;
+  overflow:visible!important;
+  background:var(--glass)!important;
+ }
+ #tabs{
+  position:fixed!important;
+  inset:auto 12px calc(9px + env(safe-area-inset-bottom,0px)) 12px!important;
+  top:auto!important;
+  left:12px!important;
+  right:12px!important;
+  bottom:calc(9px + env(safe-area-inset-bottom,0px))!important;
+  width:auto!important;
+  min-height:62px!important;
+  height:auto!important;
+  z-index:9999!important;
+  border:1px solid color-mix(in srgb,var(--line) 72%,transparent)!important;
+  border-radius:25px!important;
+  border-top:1px solid color-mix(in srgb,var(--line) 72%,transparent)!important;
+  background:var(--glass)!important;
+  -webkit-backdrop-filter:saturate(180%) blur(26px)!important;
+  backdrop-filter:saturate(180%) blur(26px)!important;
+  box-shadow:0 12px 36px rgba(0,0,0,.14)!important;
+  padding:8px 7px!important;
+  display:flex!important;
+  flex-direction:row!important;
+  justify-content:space-around!important;
+  align-items:stretch!important;
+  gap:3px!important;
+  overflow:visible!important;
+  transform:none!important;
+ }
+}
 </style></head><body>
 <header class="nav"><div class="brand"><span class="lg"><img class="lg-l" src="logo-negro.png" alt="" width="64" height="64"><img class="lg-d" src="logo-blanco.png" alt="" width="64" height="64"></span><b>Holpin</b></div><nav id="tabs"></nav><button class="btn sec sm" id="bell" title="Activar avisos de mensajes nuevos" aria-label="Activar avisos" hidden>🔔</button><button class="avbtn" id="meBtn" aria-label="Perfil"></button></header>
 <main>
