@@ -836,10 +836,10 @@ $('#meBtn').onclick=()=>{if(!sb)return;uid?show('perfil'):authSheet()};
 
 function renderProfile(){
  if(!uid||!profilesLoaded)return;
- const p=meP()||{},me=who(uid),driven=trips.filter(t=>t.driverId===uid),accepted=tripRequests.filter(r=>r.passengerId===uid&&r.status==='accepted').length,ratings=tripRatings.filter(x=>x.driverId===uid),avg=ratings.length?(ratings.reduce((a,x)=>a+x.rating,0)/ratings.length).toFixed(1):'—';
- $('#profileAvatar').src=me.photo;$('#profilePreview').src=me.photo;$('#profileName').textContent=me.name;$('#profileEmail').textContent=sb.auth.getUser? '': '';
+ const p=meP()||{},me=who(uid),driven=trips.filter(t=>t.driverId===uid&&t.completedAt).length,passengerTrips=[...new Set(tripRequests.filter(r=>r.passengerId===uid&&r.status==='accepted').map(r=>trips.find(t=>t.id===r.tripId)).filter(t=>t&&t.completedAt).map(t=>t.id))].length,ratings=tripRatings.filter(x=>x.driverId===uid),avg=ratings.length?(ratings.reduce((a,x)=>a+x.rating,0)/ratings.length).toFixed(1):'—';
+ $('#profileAvatar').src=me.photo;$('#profilePreview').src=me.photo;$('#profileName').textContent=me.name;$('#profileEmail').textContent='';const profileUid=uid;sb.auth.getUser().then(({data,error})=>{if(!error&&uid===profileUid&&view==='perfil')$('#profileEmail').textContent=data.user?.email||''});
  $('#profileNameInput').value=p.name||'';
- $('#profileStats').innerHTML=[['Viajes publicados',driven.length],['Postulaciones aceptadas',accepted],['Calificación',avg]].map(x=>'<div class="profile-stat"><strong>'+x[1]+'</strong><span>'+x[0]+'</span></div>').join('');
+ $('#profileStats').innerHTML=[['Como conductor',driven],['Como pasajero',passengerTrips],['Calificación',avg]].map(x=>'<div class="profile-stat"><strong>'+x[1]+'</strong><span>'+x[0]+'</span></div>').join('');
  $('#profileSave').disabled=true;
 }
 let profilePhotoDraft='';
