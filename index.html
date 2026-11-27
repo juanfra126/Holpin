@@ -635,7 +635,7 @@ function renderList(){
  $('#mine').innerHTML=m.length?m.map(card).join(''):'<div class="empty">Todavía no publicaste viajes.</div>';
  const applied=tripRequests.filter(x=>x.passengerId===uid).map(x=>trips.find(t=>t.id===x.tripId)).filter(Boolean).sort((a,b)=>new Date(b.when)-new Date(a.when));
  $('#myApplications').innerHTML=applied.length?applied.map(card).join(''):'<div class="empty">Todavía no te postulaste a ningún viaje.</div>';
- const mineRequests=tripRequests.filter(x=>x.passengerId===uid).length;$('#tabBadgePostulaciones')?.remove();
+
  r.concat(m,applied).forEach(x=>{seen.add(x.id);lastLeft.set(x.id,x.left)})}
 let chat=null,marking=false;const readTried=new Set();
 const other=m=>m.fromId===uid?m.toId:m.fromId;
@@ -796,7 +796,7 @@ function renderActivity(){
 $('#activityPeriods').onclick=e=>{const b=e.target.closest('[data-period]');if(!b)return;activityPeriod=b.dataset.period;renderActivity()};
 ['#activityFrom','#activityTo'].forEach(id=>$(id).addEventListener('change',renderActivity));
 function show(v){const order=['buscar','postulaciones','publicar','actividad','mensajes','perfil'];const old=order.indexOf(view),next=order.indexOf(v),dir=next>=old?'forward':'back';view=v;$('#roleSeg').hidden=v==='mensajes'||v==='perfil'||v==='postulaciones'||v==='actividad';$('#hero').hidden=v!=='buscar'&&v!=='publicar';requestAnimationFrame(()=>requestAnimationFrame(movePill));order.forEach(k=>{const el=$('#v-'+k);if(!el)return;el.hidden=k!==v;if(k===v){el.classList.remove('nav-enter-forward','nav-enter-back');void el.offsetWidth;el.classList.add(dir==='forward'?'nav-enter-forward':'nav-enter-back')}});
-  renderAll();if(v==='perfil')renderProfile()}
+  renderAll();renderTabs();if(v==='perfil')renderProfile()}
 function setRole(r){role=r;sg.set('holpin_role',r);if(r!=='conductor'&&view==='publicar')view='buscar';
  document.querySelectorAll('#roleSeg button').forEach(b=>b.classList.toggle('on',b.dataset.r===r));show(view)}
 $('#roleSeg').onclick=e=>{const r=e.target.dataset.r;if(!r)return;setRole(r);if(r==='conductor')show('publicar')};
