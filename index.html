@@ -1014,7 +1014,8 @@ $('#myApplications').onclick=onAct;
 ['#qFrom','#qTo'].forEach(s=>$(s).oninput=renderList);
 
 function authSheet(mode='choice',prefill=''){
- const showChoice=()=>sheet(`<div class="auth-brand"><span class="auth-mark">H</span><span>HOLPIN</span></div><div class="auth-kicker">TU PRÓXIMO VIAJE EMPIEZA ACÁ</div><h3 class="auth-title">¡Qué bueno tenerte!</h3><p class="auth-copy">Elegí cómo querés continuar.</p><div class="auth-options"><button class="auth-option" id="authCreate"><span class="auth-option-icon">✦</span><span><strong>Crear una cuenta</strong><small>Sumate a la comunidad Holpin</small></span><span class="auth-arrow">›</span></button><button class="auth-option" id="authLogin"><span class="auth-option-icon">↗</span><span><strong>Iniciar sesión</strong><small>Ya tengo una cuenta</small></span><span class="auth-arrow">›</span></button></div><button class="auth-close" id="authClose">Ahora no</button>`);
+ const showChoice=()=>{
+  sheet(`<div class="auth-brand"><span class="auth-mark">H</span><span>HOLPIN</span></div><div class="auth-kicker">TU PRÓXIMO VIAJE EMPIEZA ACÁ</div><h3 class="auth-title">¡Qué bueno tenerte!</h3><p class="auth-copy">Elegí cómo querés continuar.</p><div class="auth-options"><button class="auth-option" id="authCreate"><span class="auth-option-icon">✦</span><span><strong>Crear una cuenta</strong><small>Sumate a la comunidad Holpin</small></span><span class="auth-arrow">›</span></button><button class="auth-option" id="authLogin"><span class="auth-option-icon">↗</span><span><strong>Iniciar sesión</strong><small>Ya tengo una cuenta</small></span><span class="auth-arrow">›</span></button></div><button class="auth-close" id="authClose">Ahora no</button>`);
   $('#authCreate').onclick=()=>authForm('signup');$('#authLogin').onclick=()=>authForm('login');$('#authClose').onclick=close;
  };
  const authForm=kind=>{
