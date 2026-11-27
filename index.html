@@ -745,6 +745,9 @@ button,a,label{-webkit-tap-highlight-color:transparent;touch-action:manipulation
 /* Recupera el degradado animado original del título principal de Holpin */
 .hero h1{background:linear-gradient(90deg,var(--tx) 0%,var(--blue) 35%,#af52de 65%,var(--tx) 100%)!important;background-size:250% 100%!important;background-position:0% 50%;-webkit-background-clip:text!important;background-clip:text!important;-webkit-text-fill-color:transparent!important;animation:up .8s cubic-bezier(.2,.8,.2,1) both,grad 9s ease-in-out infinite alternate!important}
 @media(prefers-reduced-motion:reduce){.hero h1{animation:none!important;background-position:50% 50%}}
+
+/* Ajuste fino de simetría en el bloque de búsqueda */
+.trip-filter-actions{margin-top:19px!important}
 </style></head><body>
 <header class="nav"><div class="brand"><span class="lg"><img class="lg-l" src="logo-negro.png" alt="" width="64" height="64"><img class="lg-d" src="logo-blanco.png" alt="" width="64" height="64"></span><b>Holpin</b></div><nav id="tabs"></nav><button class="btn sec sm" id="bell" title="Activar avisos de mensajes nuevos" aria-label="Activar avisos" hidden>🔔</button><button class="avbtn" id="meBtn" aria-label="Perfil"></button></header>
 <main>
@@ -972,7 +975,7 @@ function card(t,i=0){
   if(myReq.status!=='rejected'&&!t.completedAt)a+='<button class="btn sec sm" data-a="withdraw" data-id="'+esc(t.id)+'" data-rid="'+esc(myReq.id)+'">Cancelar postulación</button>';
   if(myReq.status==='accepted'&&t.completedAt&&!tripRatings.some(x=>x.tripId===t.id&&x.passengerId===uid))a+='<button class="btn sm" data-a="rate" data-id="'+esc(t.id)+'">Calificar conductor</button>';
   else if(myReq.status==='accepted'&&tripRatings.some(x=>x.tripId===t.id&&x.passengerId===uid))a+='<span class="meta">Ya calificaste este viaje</span>';
- }else a='<button class="btn sm trip-join-btn" data-a="apply" data-id="'+esc(t.id)+'" '+(out||t.completedAt?'disabled':'')+'># Unirme al viaje</button>';
+ }else a='<button class="btn sm trip-join-btn" data-a="apply" data-id="'+esc(t.id)+'" '+(out||t.completedAt?'disabled':'')+'>Unirme</button>';
  const reqHtml=own&&mine.length?'<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)"><b>Postulaciones ('+mine.length+')</b>'+mine.map(r=>{const p=who(r.passengerId);return '<div class="row applicant-row" style="margin-top:10px"><img class="av" data-photo="'+esc(p.photo)+'" src="'+esc(p.photo)+'" alt="Foto de '+esc(p.name)+'"><div class="g"><button class="profile-link" type="button" data-profile="'+esc(r.passengerId)+'">'+esc(p.name)+'</button><br><small class="meta">'+(r.status==='pending'?'Pendiente':r.status==='accepted'?'Aceptada':'Rechazada')+'</small></div><span class="applicant-arrow">›</span></div>'}).join('')+'</div>':'';
  return '<article class="card'+(seen.has(t.id)?'':' new')+'" style="--i:'+Math.min(i,8)+'"><div class="row"><img class="av" data-photo="'+esc(w.photo)+'" src="'+esc(w.photo)+'" alt="Foto de '+esc(w.name)+'"><div class="g"><button class="profile-link driver-profile-link" type="button" data-profile="'+esc(t.driverId)+'">'+esc(w.name)+'</button><br><small class="driver-subtitle">Conductor</small><div class="driver-rating">'+(tripRatings.some(x=>x.driverId===t.driverId)?ratingSummary(t.driverId):'<span class="meta">Sin calificaciones</span>')+'</div></div><span class="price">'+money(t.price)+'</span></div>'+
  '<div class="route">'+esc(t.from)+'<i>→</i>'+esc(t.to)+'</div><div class="meta">Sale '+fmt(t.when)+'</div>'+
