@@ -637,37 +637,37 @@ button,a,label{-webkit-tap-highlight-color:transparent;touch-action:manipulation
 .public-trip small{color:var(--tx2);font-size:11px;margin-top:4px}
 @media(max-width:480px){.public-cover{height:118px}.public-avatar{width:72px;height:72px}.public-name h3{font-size:19px}.public-stats{gap:5px}.public-stats>div{padding:10px 4px}.public-stats span{font-size:9px}}
 
-/* Liquid Glass móvil: apenas teñido, muy transparente y sin blur */
+/* Liquid Glass móvil: mismo matiz que la barra superior, apenas más visible */
 @media(max-width:700px){
  #tabs{
-  background:linear-gradient(125deg,rgba(255,255,255,.24),rgba(221,234,250,.13) 55%,rgba(229,218,245,.10))!important;
-  border:1px solid rgba(255,255,255,.48)!important;
-  border-top:1px solid rgba(255,255,255,.58)!important;
-  box-shadow:0 7px 22px rgba(30,54,86,.07),inset 0 1px 0 rgba(255,255,255,.52)!important;
+  background:linear-gradient(120deg,rgba(255,255,255,.34),rgba(225,235,248,.20) 58%,rgba(229,218,245,.15))!important;
+  border:1px solid rgba(255,255,255,.54)!important;
+  border-top:1px solid rgba(255,255,255,.62)!important;
+  box-shadow:0 7px 22px rgba(25,48,78,.075),inset 0 1px 0 rgba(255,255,255,.58)!important;
   -webkit-backdrop-filter:none!important;
   backdrop-filter:none!important;
  }
  #tabs .tab-lens{
   -webkit-backdrop-filter:none!important;
   backdrop-filter:none!important;
-  background:linear-gradient(135deg,rgba(255,255,255,.28),rgba(192,215,244,.17) 55%,rgba(213,194,237,.13))!important;
-  border-color:rgba(255,255,255,.54)!important;
+  background:linear-gradient(135deg,rgba(255,255,255,.34),rgba(192,215,244,.20) 55%,rgba(213,194,237,.16))!important;
+  border-color:rgba(255,255,255,.58)!important;
  }
 }
 @media(max-width:700px) and (prefers-color-scheme:dark){
  #tabs{
-  background:linear-gradient(125deg,rgba(45,58,78,.22),rgba(55,76,105,.15) 55%,rgba(77,62,99,.12))!important;
-  border-color:rgba(255,255,255,.15)!important;
-  border-top-color:rgba(255,255,255,.19)!important;
-  box-shadow:0 7px 22px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.12)!important;
+  background:linear-gradient(120deg,rgba(35,43,58,.30),rgba(68,83,108,.19) 58%,rgba(77,62,99,.15))!important;
+  border-color:rgba(255,255,255,.17)!important;
+  border-top-color:rgba(255,255,255,.21)!important;
+  box-shadow:0 7px 22px rgba(0,0,0,.17),inset 0 1px 0 rgba(255,255,255,.14)!important;
  }
  #tabs .tab-lens{
-  background:linear-gradient(135deg,rgba(128,157,194,.16),rgba(105,140,185,.12) 55%,rgba(150,119,180,.10))!important;
-  border-color:rgba(255,255,255,.17)!important;
+  background:linear-gradient(135deg,rgba(128,157,194,.20),rgba(105,140,185,.15) 55%,rgba(150,119,180,.12))!important;
+  border-color:rgba(255,255,255,.19)!important;
  }
 }
-:root[data-theme="dark"] #tabs{background:linear-gradient(125deg,rgba(45,58,78,.22),rgba(55,76,105,.15) 55%,rgba(77,62,99,.12))!important;border-color:rgba(255,255,255,.15)!important;box-shadow:0 7px 22px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.12)!important}
-:root[data-theme="dark"] #tabs .tab-lens{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;background:linear-gradient(135deg,rgba(128,157,194,.16),rgba(105,140,185,.12) 55%,rgba(150,119,180,.10))!important;border-color:rgba(255,255,255,.17)!important}
+:root[data-theme="dark"] #tabs{background:linear-gradient(120deg,rgba(35,43,58,.30),rgba(68,83,108,.19) 58%,rgba(77,62,99,.15))!important;border-color:rgba(255,255,255,.17)!important;box-shadow:0 7px 22px rgba(0,0,0,.17),inset 0 1px 0 rgba(255,255,255,.14)!important}
+:root[data-theme="dark"] #tabs .tab-lens{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;background:linear-gradient(135deg,rgba(128,157,194,.20),rgba(105,140,185,.15) 55%,rgba(150,119,180,.12))!important;border-color:rgba(255,255,255,.19)!important}
 
 /* Microinteracciones móviles: feedback visible en pantallas táctiles */
 @media(max-width:700px), (pointer:coarse){
