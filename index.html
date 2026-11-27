@@ -408,8 +408,14 @@ async function syncPush(ask){
   if(Notification.permission==='default'&&ask)await Notification.requestPermission();
   if(Notification.permission!=='granted')return false;
   const reg=await Promise.race([navigator.serviceWorker.ready,new Promise((_,j)=>setTimeout(()=>j(new Error('no se encontró sw.js')),5000))]);
+  const appKey=u8(VAPID_PUBLIC);
   let s=await reg.pushManager.getSubscription();
-  if(!s)s=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:u8(VAPID_PUBLIC)});
+  if(s){
+   const oldKey=s.options&&s.options.applicationServerKey;
+   const same=oldKey&&oldKey.byteLength===appKey.byteLength&&appKey.every((v,i)=>v===new Uint8Array(oldKey)[i]);
+   if(!same){await s.unsubscribe();s=null}
+  }
+  if(!s)s=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:appKey});
   const j=s.toJSON();
   const r=await sb.from('push_subscriptions').upsert({endpoint:j.endpoint,user_id:uid,sub:j},{onConflict:'endpoint'});
   if(r.error){console.error(r.error);toast('No se pudo activar el aviso: '+r.error.message);return false}
