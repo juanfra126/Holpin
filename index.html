@@ -391,8 +391,14 @@ function notify(m){
  const o=who(m.from_id),inChat=chat&&chat.other===m.from_id&&view==='mensajes'&&!document.hidden;
  if(inChat)return;
  beep();try{navigator.vibrate&&navigator.vibrate([120,60,120])}catch(e){}
- if(document.hidden){if(!pushOn&&'Notification' in window&&Notification.permission==='granted')pushNote(o.name,m.body,o.photo)}
- else toast('Nuevo mensaje de '+o.name)}
+ if(!document.hidden){
+  toast('Nuevo mensaje de '+o.name);
+  if('Notification' in window&&Notification.permission==='granted')pushNote(o.name,m.body,o.photo);
+ }else if(!pushOn&&'Notification' in window&&Notification.permission==='granted'){
+  // Respaldo mientras la página sigue viva; con la app cerrada envía el servidor.
+  pushNote(o.name,m.body,o.photo);
+ }
+}
 const VAPID_PUBLIC='BAcF6yvUJWDuukXhThyw4SjPrCPJAFq0NclE6ciivyOwLiPz9sjqopDuuRJKMQtuDigaVQJV8SYBwS4jXTWFlZc';
 let pushOn=false;
 const u8=b=>{const s=atob((b+'='.repeat((4-b.length%4)%4)).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from([...s].map(c=>c.charCodeAt(0)))};
