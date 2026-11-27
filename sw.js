@@ -5,7 +5,7 @@ self.addEventListener('push',e=>{
   let d={};
   try{d=e.data?e.data.json():{}}catch(_){d={body:e.data?e.data.text():''}}
   e.waitUntil(self.clients.matchAll({type:'window',includeUncontrolled:true}).then(list=>{
-    if(list.some(c=>c.visibilityState==='visible'))return; // la app está a la vista: avisa ella misma
+    if(list.some(c=>c.visibilityState==='visible'))return;
     const icon=new URL('icon-192.png',self.registration.scope).href;
     return self.registration.showNotification(d.title||'Holpin',{
       body:d.body||'Tenés un mensaje nuevo',
