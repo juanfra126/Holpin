@@ -938,7 +938,23 @@ function renderActivity(){
 }
 $('#activityPeriods').onclick=e=>{const b=e.target.closest('[data-period]');if(!b)return;activityPeriod=b.dataset.period;renderActivity()};
 ['#activityFrom','#activityTo'].forEach(id=>$(id).addEventListener('change',renderActivity));
-function show(v){const order=['buscar','postulaciones','publicar','actividad','mensajes','perfil'];const old=order.indexOf(view),next=order.indexOf(v),dir=next>=old?'forward':'back';view=v;$('#roleSeg').hidden=v==='mensajes'||v==='perfil'||v==='postulaciones'||v==='actividad';$('#hero').hidden=v!=='buscar'&&v!=='publicar';requestAnimationFrame(()=>requestAnimationFrame(movePill));order.forEach(k=>{const el=$('#v-'+k);if(!el)return;el.hidden=k!==v;if(k===v){el.classList.remove('nav-enter-forward','nav-enter-back');void el.offsetWidth;el.classList.add(dir==='forward'?'nav-enter-forward':'nav-enter-back')}});
+function animateMobileSection(el,dir){
+ if(!el||window.innerWidth>700||!el.animate)return;
+ const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+ if(reduce)return;
+ el.animate(
+  dir==='forward'
+   ?[{opacity:.55,transform:'translate3d(26px,8px,0) scale(.99)',filter:'blur(2px)'},{opacity:1,transform:'translate3d(0,0,0) scale(1)',filter:'blur(0)'}]
+   :[{opacity:.55,transform:'translate3d(-26px,8px,0) scale(.99)',filter:'blur(2px)'},{opacity:1,transform:'translate3d(0,0,0) scale(1)',filter:'blur(0)'}],
+  {duration:460,easing:'cubic-bezier(.22,.8,.25,1)'}
+ );
+ const surfaces=[...el.querySelectorAll('.panel,.card,.activity-panel,.profile-page,.stat')].slice(0,7);
+ surfaces.forEach((item,i)=>item.animate(
+  [{opacity:.72,transform:'translate3d(0,12px,0)'},{opacity:1,transform:'translate3d(0,0,0)'}],
+  {duration:360,delay:35+i*32,easing:'cubic-bezier(.2,.75,.25,1)'}
+ ));
+}
+function show(v){const order=['buscar','postulaciones','publicar','actividad','mensajes','perfil'];const old=order.indexOf(view),next=order.indexOf(v),dir=next>=old?'forward':'back';view=v;$('#roleSeg').hidden=v==='mensajes'||v==='perfil'||v==='postulaciones'||v==='actividad';$('#hero').hidden=v!=='buscar'&&v!=='publicar';requestAnimationFrame(()=>requestAnimationFrame(movePill));order.forEach(k=>{const el=$('#v-'+k);if(!el)return;el.hidden=k!==v;if(k===v){el.classList.remove('nav-enter-forward','nav-enter-back');void el.offsetWidth;el.classList.add(dir==='forward'?'nav-enter-forward':'nav-enter-back');animateMobileSection(el,dir)}});
   renderAll();renderTabs();if(v==='perfil')renderProfile()}
 function setRole(r){role=r;sg.set('holpin_role',r);if(r!=='conductor'&&view==='publicar')view='buscar';
  document.querySelectorAll('#roleSeg button').forEach(b=>b.classList.toggle('on',b.dataset.r===r));show(view)}
@@ -1079,3 +1095,12 @@ addEventListener('load',movePill);addEventListener('resize',movePill);addEventLi
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)renderMsgs()});
 setRole(role);boot();
 </script></body></html>
+
+/* Mobile premium tab transitions */
+@media(max-width:700px){
+ section.nav-enter-forward{animation:navSlideForward .46s cubic-bezier(.22,.8,.25,1) both!important}
+ section.nav-enter-back{animation:navSlideBack .46s cubic-bezier(.22,.8,.25,1) both!important}
+ #tabs button{transition:color .22s ease,opacity .22s ease}
+ #tabs button:active{transform:scale(.94)}
+ #tabs button.on svg{animation:tabIconLand .5s cubic-bezier(.18,.9,.25,1.2) both}
+}
