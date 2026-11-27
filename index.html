@@ -685,6 +685,46 @@ button,a,label{-webkit-tap-highlight-color:transparent;touch-action:manipulation
 @keyframes holpinAvatarPop{0%{opacity:0;transform:translateY(16px) scale(.78)}70%{opacity:1;transform:translateY(-3px) scale(1.06)}100%{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes holpinDetailsIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 @media(prefers-reduced-motion:reduce){.btn,.auth-option,#roleSeg button,#tabs button,.card,.panel,.activity-panel,.stat,.profile-page .profile-cover,.profile-page .profile-avatar,.profile-page .profile-heading{animation:none!important;transition:none!important}}
+
+/* Pedidos de viaje: tarjetas premium y formulario responsive */
+.pedido-compose{margin:0 0 26px;padding:22px}
+.pedido-compose-head{display:flex;align-items:center;gap:13px;margin-bottom:18px}
+.pedido-mark{width:44px;height:44px;display:grid;place-items:center;border-radius:15px;background:linear-gradient(135deg,rgba(255,255,255,.78),rgba(205,222,244,.38));border:1px solid rgba(255,255,255,.8);box-shadow:0 5px 16px rgba(32,61,98,.08);color:var(--blue);font-size:20px}
+.pedido-compose-head h3{margin:0;font-size:18px;letter-spacing:-.02em}
+.pedido-compose-head p{margin:4px 0 0;color:var(--tx2);font-size:13px}
+.pedido-list-head{display:flex;align-items:center;justify-content:space-between;margin:24px 0 13px}
+.pedido-list-head h3{margin:4px 0 0;font-size:20px}
+.pedido-live,.pedido-status{font-size:11px;font-weight:650;letter-spacing:.02em;color:#39734e;background:rgba(69,157,99,.10);border:1px solid rgba(69,157,99,.16);padding:6px 10px;border-radius:99px}
+.pedido-card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:19px;margin:0 0 13px;box-shadow:0 8px 24px rgba(24,43,68,.045);transition:transform .28s cubic-bezier(.16,1,.3,1),box-shadow .28s}
+.pedido-card:hover{transform:translateY(-2px);box-shadow:0 13px 30px rgba(24,43,68,.09)}
+.pedido-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.pedido-route{display:flex;align-items:center;gap:10px;min-width:0}
+.pedido-route>div{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.pedido-route strong{font-size:clamp(16px,2.5vw,19px);letter-spacing:-.025em}
+.pedido-pin{color:var(--blue);font-size:12px}
+.pedido-arrow{color:var(--tx2);font-size:17px}
+.pedido-details{display:flex;flex-wrap:wrap;gap:8px 17px;margin:15px 0;color:var(--tx2);font-size:13px}
+.pedido-note{margin:0 0 15px;padding:11px 13px;border-radius:13px;background:var(--fill);color:var(--tx2);font-size:13px;line-height:1.5}
+.pedido-footer{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:13px;border-top:1px solid var(--line)}
+.pedido-user{display:flex;align-items:center;gap:9px;min-width:0;border:0;background:none;padding:0;text-align:left;color:var(--tx);cursor:pointer}
+.pedido-user img{width:36px;height:36px;border-radius:50%;object-fit:cover}
+.pedido-user span{display:grid;gap:2px}
+.pedido-user small{font-size:10px;color:var(--tx2)}
+.pedido-user b{font-size:13px}
+.pedido-actions{display:flex;gap:7px;align-items:center}
+@media(max-width:700px){
+ #v-pedidos .activity-head{display:block}
+ .pedido-compose{padding:17px;border-radius:20px}
+ .pedido-card{padding:16px;border-radius:19px}
+ .pedido-top{align-items:flex-start}
+ .pedido-status{font-size:10px;padding:5px 8px;white-space:nowrap}
+ .pedido-footer{align-items:flex-start;flex-direction:column}
+ .pedido-actions{width:100%}
+ .pedido-actions .btn{width:100%}
+ .pedido-details{gap:8px 12px}
+}
+:root[data-theme="dark"] .pedido-mark{background:linear-gradient(135deg,rgba(128,157,194,.2),rgba(105,140,185,.12));border-color:rgba(255,255,255,.16)}
+@media(prefers-reduced-motion:reduce){.pedido-card{transition:none}}
 </style></head><body>
 <header class="nav"><div class="brand"><span class="lg"><img class="lg-l" src="logo-negro.png" alt="" width="64" height="64"><img class="lg-d" src="logo-blanco.png" alt="" width="64" height="64"></span><b>Holpin</b></div><nav id="tabs"></nav><button class="btn sec sm" id="bell" title="Activar avisos de mensajes nuevos" aria-label="Activar avisos" hidden>🔔</button><button class="avbtn" id="meBtn" aria-label="Perfil"></button></header>
 <main>
@@ -692,8 +732,19 @@ button,a,label{-webkit-tap-highlight-color:transparent;touch-action:manipulation
 <div class="seg" id="roleSeg"><span class="pill"></span><button data-r="pasajero">Soy pasajero</button><button data-r="conductor">Soy conductor</button></div></section>
 
 <section id="v-buscar">
-<div class="panel"><div class="grid"><div><label>Salgo desde</label><input id="qFrom" placeholder="Ciudad de salida"></div><div><label>Quiero ir a</label><input id="qTo" placeholder="Ciudad de destino"></div></div></div>
+<div class="panel"><div class="grid"><div><label>Salgo desde</label><input id="qFrom" placeholder="Ciudad de salida"></div><div><label>Quiero ir a</label><input id="qTo" placeholder="Ciudad de destino"></div><div><label>Fecha del viaje</label><input id="qDate" type="date"></div></div><div class="acts" style="justify-content:flex-end;margin-top:10px"><button class="btn sec sm" id="clearTripFilters" type="button">Limpiar filtros</button></div></div>
 <div id="list"></div></section>
+<section id="v-pedidos" hidden>
+ <div class="activity-head"><div><div class="meta">La comunidad Holpin</div><h2>Pedidos de viaje</h2><p class="muted" style="margin:5px 0 0">¿Necesitás viajar? Publicá tu recorrido y conectá con alguien que tenga lugar.</p></div></div>
+ <div class="panel pedido-compose">
+  <div class="pedido-compose-head"><span class="pedido-mark">✦</span><div><h3>¿A dónde necesitás ir?</h3><p>Contale a la comunidad qué viaje estás buscando.</p></div></div>
+  <div class="grid"><div><label>Salgo desde</label><input id="rFrom" maxlength="100" placeholder="Ciudad de origen"></div><div><label>Quiero llegar a</label><input id="rTo" maxlength="100" placeholder="Ciudad de destino"></div><div><label>¿Qué día?</label><input id="rDate" type="date"></div><div><label>Horario (opcional)</label><input id="rTime" type="time"></div><div><label>Pasajeros</label><input id="rPassengers" type="number" min="1" max="8" value="1" inputmode="numeric"></div></div>
+  <label style="margin-top:12px">Un detalle más (opcional)</label><textarea id="rNote" rows="2" maxlength="500" placeholder="Por ejemplo: puedo compartir gastos, llevo equipaje, tengo flexibilidad horaria..."></textarea>
+  <div class="acts"><button class="btn" id="publishRequest">Publicar mi pedido</button></div>
+ </div>
+ <div class="pedido-list-head"><div><div class="meta">CONEXIONES QUE ESTÁN BUSCANDO</div><h3>Pedidos de la comunidad</h3></div><span class="pedido-live">Actualizados</span></div>
+ <div id="pedidosList"></div>
+</section>
 <section id="v-postulaciones" hidden><div class="activity-head"><div><div class="meta">Tus lugares reservados</div><h2>Mis postulaciones</h2></div></div><div id="myApplications"></div></section>
 
 <section id="v-publicar" hidden>
@@ -810,7 +861,7 @@ window.matchMedia&&window.matchMedia('(display-mode: standalone)').addEventListe
 $('#ov').onclick=e=>{if(e.target.id==='ov'&&!$('#ov').dataset.lock)close()};
 
 let sb=null;try{if(window.supabase&&/^https:\/\//.test(SUPABASE_URL)&&SUPABASE_ANON_KEY.length>20)sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:window.localStorage}})}catch(e){sb=null}
-let uid=null,ready=false,profilesLoaded=false,profs={},trips=[],msgs=[],tripRequests=[],tripRatings=[],role=sg.get('holpin_role','pasajero'),view='buscar';
+let uid=null,ready=false,profilesLoaded=false,profs={},trips=[],msgs=[],tripRequests=[],tripRatings=[],rideRequests=[],role=sg.get('holpin_role','pasajero'),view='buscar';
 const dflt=ini('?','#8e8e93');
 const who=id=>{const p=profs[id]||{};return{name:p.name||'Usuario',photo:/^data:image\//.test(p.photo||'')?p.photo:dflt}};
 const meP=()=>uid?profs[uid]:null;
@@ -826,10 +877,11 @@ async function load(){
   sb.from('trips').select('*'),
   uid?sb.from('messages').select('*'):Promise.resolve({data:[]}),
   sb.from('trip_requests').select('*'),
-  sb.from('trip_ratings').select('*')
+  sb.from('trip_ratings').select('*'),
+  sb.from('ride_requests').select('*')
  ]);
  if(my!==loadSeq)return false;
- const p=results[0],t=results[1],m=results[2],qr=results[3],rr=results[4];
+ const p=results[0],t=results[1],m=results[2],qr=results[3],rr=results[4],pr=results[5];
  if(p.error){
   profilesLoaded=false;
   console.error('No se pudieron cargar los perfiles:',p.error);
@@ -852,6 +904,7 @@ async function load(){
  }
  tripRequests=qr.error?[]:(qr.data||[]).map(x=>({id:x.id,tripId:x.trip_id,passengerId:x.passenger_id,status:x.status}));
  tripRatings=rr.error?[]:(rr.data||[]).map(x=>({id:x.id,tripId:x.trip_id,passengerId:x.passenger_id,driverId:x.driver_id,rating:x.rating}));
+ rideRequests=pr.error?[]:(pr.data||[]).map(x=>({id:x.id,passengerId:x.passenger_id,from:x.origin,to:x.destination,date:x.travel_date,time:x.departure_time,passengers:x.passengers,note:x.note||'',status:x.status,createdAt:x.created_at}));
  msgs=(m.data||[]).map(x=>({
   id:x.id,tripId:x.trip_id,fromId:x.from_id,toId:x.to_id,text:x.body,
   route:x.route||'',ts:new Date(x.created_at).getTime(),read:x.read
@@ -909,8 +962,8 @@ function card(t,i=0){
 }
 function renderList(){
  if(!ready)return;
- const f=nrm($('#qFrom').value),to=nrm($('#qTo').value),n=Date.now();
- const r=live().filter(t=>new Date(t.when).getTime()>n&&nrm(t.from).includes(f)&&nrm(t.to).includes(to)).sort((a,b)=>a.when<b.when?-1:1);
+ const f=nrm($('#qFrom').value),to=nrm($('#qTo').value),day=$('#qDate').value,n=Date.now();
+ const r=live().filter(t=>new Date(t.when).getTime()>n&&nrm(t.from).includes(f)&&nrm(t.to).includes(to)&&(!day||new Date(t.when).toLocaleDateString('en-CA')===day)).sort((a,b)=>a.when<b.when?-1:1);
  $('#list').innerHTML=r.length?r.map(card).join(''):'<div class="empty">No hay viajes para esa búsqueda.</div>';
  const m=live().filter(t=>t.driverId===uid);
  $('#mine').innerHTML=m.length?m.map(card).join(''):'<div class="empty">Todavía no publicaste viajes.</div>';
@@ -918,6 +971,15 @@ function renderList(){
  $('#myApplications').innerHTML=applied.length?applied.map(card).join(''):'<div class="empty">Todavía no te postulaste a ningún viaje.</div>';
 
  r.concat(m,applied).forEach(x=>{seen.add(x.id);lastLeft.set(x.id,x.left)})}
+function pedidoCard(r){
+ const person=who(r.passengerId),date=new Date(r.date+'T00:00:00'),dateLabel=new Intl.DateTimeFormat('es-AR',{weekday:'long',day:'numeric',month:'long'}).format(date),time=r.time?String(r.time).slice(0,5):'Horario flexible',own=r.passengerId===uid;
+ return '<article class="pedido-card"><div class="pedido-top"><div class="pedido-route"><span class="pedido-pin">●</span><div><strong>'+esc(r.from)+'</strong><span class="pedido-arrow">→</span><strong>'+esc(r.to)+'</strong></div></div><span class="pedido-status">Buscando auto</span></div><div class="pedido-details"><span>◷ '+esc(dateLabel)+'</span><span>⌚ '+esc(time)+'</span><span>♙ '+r.passengers+' '+(r.passengers===1?'pasajero':'pasajeros')+'</span></div>'+(r.note?'<p class="pedido-note">'+esc(r.note)+'</p>':'')+'<div class="pedido-footer"><button class="pedido-user" data-profile="'+esc(r.passengerId)+'"><img src="'+esc(person.photo)+'" alt=""><span><small>Publicado por</small><b>'+esc(person.name)+'</b></span></button><div class="pedido-actions">'+(own?'<button class="btn sec sm" data-request-del="'+esc(r.id)+'">Eliminar pedido</button>':'<button class="btn sm" data-request-contact="'+esc(r.id)+'">Contactar</button>')+'</div></div></article>';
+}
+function renderPedidos(){
+ const box=$('#pedidosList');if(!box)return;
+ const items=rideRequests.filter(r=>r.status==='open').sort((a,b)=>(a.date+' '+(a.time||'23:59')).localeCompare(b.date+' '+(b.time||'23:59')));
+ box.innerHTML=items.length?items.map(pedidoCard).join(''):'<div class="empty">Todavía no hay pedidos publicados. ¡Podés ser la primera persona en buscar un viaje!</div>';
+}
 let chat=null,marking=false;const readTried=new Set();
 const other=m=>m.fromId===uid?m.toId:m.fromId;
 const ckey=m=>other(m)+'|'+(m.tripId||m.route);
@@ -1063,7 +1125,7 @@ function renderTabs(){
  const un=msgs.filter(m=>m.toId===uid&&!m.read).length;
  document.title=(un?'('+un+') ':'')+'Holpin — Coordiná tus viajes';
  $('#bell').hidden=!(uid&&'Notification' in window&&Notification.permission!=='denied'&&!pushOn);
- const tabs=[['buscar','Viajes'],['postulaciones','Mis postulaciones'],['actividad','Actividad']].concat(role==='conductor'?[['publicar','Publicar']]:[],[['mensajes','Mensajes']]);
+ const tabs=[['buscar','Viajes'],['pedidos','Pedidos'],['postulaciones','Mis postulaciones'],['actividad','Actividad']].concat(role==='conductor'?[['publicar','Publicar']]:[],[['mensajes','Mensajes']]);
  const nav=$('#tabs');
  let lens=nav.querySelector('.tab-lens');
  if(!lens){lens=document.createElement('span');lens.className='tab-lens';lens.setAttribute('aria-hidden','true');}
@@ -1072,7 +1134,7 @@ function renderTabs(){
  nav.appendChild(lens);
  requestAnimationFrame(()=>requestAnimationFrame(moveTabIndicator));
  $('#meBtn').innerHTML=meP()?`<img class="av" src="${esc(who(uid).photo)}" alt="">`:'<span class="btn sec sm">Entrar</span>'}
-const renderAll=()=>{renderList();renderMsgs();renderActivity()};
+const renderAll=()=>{renderList();renderPedidos();renderMsgs();renderActivity()};
 function activityRange(){
  const now=new Date(),start=new Date(now);
  if(activityPeriod==='week'){const day=(now.getDay()+6)%7;start.setDate(now.getDate()-day);start.setHours(0,0,0,0)}
@@ -1133,14 +1195,41 @@ function animateMobileSection(el,dir){
   );
  });
 }
-function show(v){const order=['buscar','postulaciones','publicar','actividad','mensajes','perfil'];const old=order.indexOf(view),next=order.indexOf(v),dir=next>=old?'forward':'back';view=v;$('#roleSeg').hidden=v==='mensajes'||v==='perfil'||v==='postulaciones'||v==='actividad';$('#hero').hidden=v!=='buscar'&&v!=='publicar';requestAnimationFrame(()=>requestAnimationFrame(movePill));order.forEach(k=>{const el=$('#v-'+k);if(!el)return;el.hidden=k!==v;if(k===v){el.classList.remove('nav-enter-forward','nav-enter-back');void el.offsetWidth;el.classList.add(dir==='forward'?'nav-enter-forward':'nav-enter-back');animateMobileSection(el,dir)}});
+function show(v){const order=['buscar','pedidos','postulaciones','publicar','actividad','mensajes','perfil'];const old=order.indexOf(view),next=order.indexOf(v),dir=next>=old?'forward':'back';view=v;$('#roleSeg').hidden=v==='mensajes'||v==='perfil'||v==='postulaciones'||v==='actividad'||v==='pedidos';$('#hero').hidden=v!=='buscar'&&v!=='publicar';requestAnimationFrame(()=>requestAnimationFrame(movePill));order.forEach(k=>{const el=$('#v-'+k);if(!el)return;el.hidden=k!==v;if(k===v){el.classList.remove('nav-enter-forward','nav-enter-back');void el.offsetWidth;el.classList.add(dir==='forward'?'nav-enter-forward':'nav-enter-back');animateMobileSection(el,dir)}});
   renderAll();renderTabs();if(v==='perfil')renderProfile()}
 function setRole(r){role=r;sg.set('holpin_role',r);if(r!=='conductor'&&view==='publicar')view='buscar';
  document.querySelectorAll('#roleSeg button').forEach(b=>b.classList.toggle('on',b.dataset.r===r));show(view)}
 $('#roleSeg').onclick=e=>{const r=e.target.dataset.r;if(!r)return;setRole(r);if(r==='conductor')show('publicar')};
 $('#tabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.v==='mensajes')chat=null;show(b.dataset.v)};
 $('#myApplications').onclick=onAct;
-['#qFrom','#qTo'].forEach(s=>$(s).oninput=renderList);
+['#qFrom','#qTo','#qDate'].forEach(s=>$(s).oninput=renderList);
+$('#clearTripFilters').onclick=()=>{['#qFrom','#qTo','#qDate'].forEach(s=>$(s).value='');renderList()};
+$('#publishRequest').onclick=async()=>{
+ if(!need())return;
+ const v=id=>$(id).value.trim(),from=v('#rFrom'),to=v('#rTo'),date=v('#rDate'),time=v('#rTime'),passengers=+v('#rPassengers'),note=v('#rNote');
+ if(!from||!to||!date)return toast('Completá origen, destino y fecha');
+ if(nrm(from)===nrm(to))return toast('El origen y el destino tienen que ser distintos');
+ if(new Date(date+'T23:59:59').getTime()<Date.now())return toast('Elegí una fecha de hoy en adelante');
+ if(!Number.isInteger(passengers)||passengers<1||passengers>8)return toast('La cantidad debe ser de 1 a 8 pasajeros');
+ const b=$('#publishRequest');b.disabled=true;
+ const result=await sb.from('ride_requests').insert({passenger_id:uid,origin:from,destination:to,travel_date:date,departure_time:time||null,passengers,note,status:'open'});
+ b.disabled=false;
+ if(result.error){console.error(result.error);return toast('No se pudo publicar el pedido: '+result.error.message)}
+ ['#rFrom','#rTo','#rDate','#rTime','#rNote'].forEach(i=>$(i).value='');$('#rPassengers').value='1';
+ toast('¡Tu pedido ya está publicado!');await load();show('pedidos');
+};
+$('#pedidosList').onclick=async e=>{
+ const del=e.target.closest('[data-request-del]');
+ if(del){const item=rideRequests.find(x=>x.id===del.dataset.requestDel);if(!item||item.passengerId!==uid)return;
+  sheet('<h3>¿Eliminar este pedido?</h3><p>Dejará de aparecer en la lista de pedidos.</p><div class="acts"><button class="btn" id="confirmRequestDelete">Sí, eliminar</button><button class="btn sec" id="cancelRequestDelete">Conservar</button></div>');
+  $('#cancelRequestDelete').onclick=close;$('#confirmRequestDelete').onclick=async()=>{const b=$('#confirmRequestDelete');b.disabled=true;const x=await sb.from('ride_requests').delete().eq('id',item.id);if(x.error){b.disabled=false;return toast('No se pudo eliminar: '+x.error.message)}close();toast('Pedido eliminado');await load()};return;
+ }
+ const contact=e.target.closest('[data-request-contact]');
+ if(contact){const item=rideRequests.find(x=>x.id===contact.dataset.requestContact);if(!item)return;if(!need())return;if(item.passengerId===uid)return;
+  const person=who(item.passengerId);chat={key:item.passengerId+'|pedido:'+item.id,other:item.passengerId,tripId:null,route:'Pedido: '+item.from+' → '+item.to};show('mensajes');
+  const input=$('#cTxt');if(input){input.value='Hola '+person.name+', vi tu pedido para viajar de '+item.from+' a '+item.to+'. ¿Seguís buscando auto?';input.focus()}
+ }
+};
 
 function authSheet(mode='choice',prefill=''){
  const showChoice=()=>{
@@ -1275,7 +1364,7 @@ function sugShow(inp){
  const rc=inp.getBoundingClientRect();
  b.style.left=(rc.left+scrollX)+'px';b.style.top=(rc.bottom+scrollY+6)+'px';b.style.minWidth=rc.width+'px';
  b.innerHTML=r.map(c=>`<div>${esc(c)}</div>`).join('');b.hidden=false;sugEl=inp}
-document.querySelectorAll('#qFrom,#qTo,#pFrom,#pTo').forEach(i=>{i.setAttribute('autocomplete','off');
+document.querySelectorAll('#qFrom,#qTo,#pFrom,#pTo,#rFrom,#rTo').forEach(i=>{i.setAttribute('autocomplete','off');
  i.addEventListener('input',()=>sugShow(i));i.addEventListener('focus',()=>sugShow(i));
  i.addEventListener('blur',()=>setTimeout(()=>{$('#sug').hidden=true},150))});
 $('#sug').addEventListener('mousedown',e=>{e.preventDefault();const d=e.target.closest('div');if(!d||!sugEl)return;
