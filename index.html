@@ -60,6 +60,36 @@ h2{font-size:24px;letter-spacing:-.02em;margin:26px 0 12px}
 .pic .av{width:72px;height:72px}
 #toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:11px 20px;border-radius:980px;font-size:14px;z-index:40;opacity:0;pointer-events:none;transition:opacity .25s}
 #toast.on{opacity:1}
+/* ---- Animaciones ---- */
+@keyframes up{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes pop{from{opacity:0;transform:scale(.92) translateY(12px)}to{opacity:1;transform:none}}
+@keyframes bounce{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+@keyframes float{to{transform:translateY(26px) scale(1.12)}}
+.hero{position:relative}
+.hero::before{content:"";position:absolute;inset:-30px 12% auto;height:260px;background:radial-gradient(closest-side,rgba(0,113,227,.22),transparent);filter:blur(30px);z-index:-1;pointer-events:none;animation:float 7s ease-in-out infinite alternate}
+.hero h1{animation:up .8s cubic-bezier(.2,.8,.2,1) both}
+.hero p{animation:up .8s .12s cubic-bezier(.2,.8,.2,1) both}
+.hero .seg{animation:up .8s .24s cubic-bezier(.2,.8,.2,1) both}
+section[id^="v-"]:not([hidden]){animation:up .45s cubic-bezier(.2,.8,.2,1) both}
+.card{transition:transform .3s cubic-bezier(.2,.8,.2,1),box-shadow .3s}
+.card.new{animation:up .55s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0)*70ms)}
+.card:hover{transform:translateY(-4px);box-shadow:0 12px 32px rgba(0,0,0,.14)}
+.route i{display:inline-block;transition:transform .3s}
+.card:hover .route i{transform:translateX(6px)}
+.btn,.seg button,#tabs button{transition:transform .15s,opacity .2s,background .25s,box-shadow .25s,color .2s}
+.btn:hover:not(:disabled){opacity:.88}
+.btn:active:not(:disabled),.seg button:active{transform:scale(.94)}
+input,textarea{transition:border-color .2s,box-shadow .2s}
+input:focus,textarea:focus{box-shadow:0 0 0 4px rgba(0,113,227,.18)}
+.badge,.dot{animation:bounce .45s both}
+.ov:not([hidden]){animation:fade .25s both}
+.ov:not([hidden]) .sheet{animation:pop .4s cubic-bezier(.2,.9,.3,1.15) both}
+#toast{transition:opacity .25s,transform .35s cubic-bezier(.2,.9,.3,1.2)}
+#toast.on{transform:translateX(-50%) translateY(-8px)}
+.av{transition:transform .25s}
+.card:hover .av{transform:scale(1.08)}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style></head><body>
 <header class="nav"><b>Holpin</b><nav id="tabs"></nav><button class="avbtn" id="meBtn" aria-label="Perfil"></button></header>
 <main>
@@ -82,10 +112,15 @@ h2{font-size:24px;letter-spacing:-.02em;margin:26px 0 12px}
 </main>
 <datalist id="cities"><option>Buenos Aires</option><option>Córdoba</option><option>Rosario</option><option>Mendoza</option><option>La Plata</option><option>Mar del Plata</option><option>Tucumán</option><option>Salta</option><option>Santa Fe</option><option>Neuquén</option><option>Bariloche</option><option>Paraná</option><option>Posadas</option><option>Corrientes</option><option>San Luis</option><option>Bahía Blanca</option></datalist>
 <div class="ov" id="ov" hidden><div class="sheet" id="sheet"></div></div><div id="toast"></div>
+<!-- PASO 1: pegá tus datos de Supabase ENTRE LAS COMILLAS (sin borrar las comillas) -->
+<script>
+window.HOLPIN_URL="https://ufymsapavinnuulnpftq.supabase.co";
+window.HOLPIN_KEY="sb_publishable_LQPL262JcfUHytP0PjI1pw_PsTfQesb";
+window.addEventListener('error',function(e){var d=document.createElement('div');d.style.cssText='position:fixed;left:0;right:0;bottom:0;z-index:99;background:#ff3b30;color:#fff;padding:10px 14px;font:14px sans-serif';d.textContent='Error en la página: '+e.message;document.body.appendChild(d)});
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
-/* 1) Pegá acá los datos de tu proyecto: Supabase > Project Settings > API */
-const SUPABASE_URL='ufymsapavinnuulnpftq',SUPABASE_ANON_KEY='sb_publishable_LQPL262JcfUHytP0PjI1pw_PsTfQesb';
+const SUPABASE_URL=window.HOLPIN_URL||'',SUPABASE_ANON_KEY=window.HOLPIN_KEY||'';
 
 const $=s=>document.querySelector(s),H3=3*36e5;
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -99,7 +134,7 @@ function sheet(h,lock){$('#sheet').innerHTML=h;$('#ov').hidden=false;$('#ov').da
 function close(){$('#ov').hidden=true}
 $('#ov').onclick=e=>{if(e.target.id==='ov'&&!$('#ov').dataset.lock)close()};
 
-const sb=(window.supabase&&!SUPABASE_URL.startsWith('TU_'))?supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY):null;
+let sb=null;try{if(window.supabase&&/^https:\/\//.test(SUPABASE_URL)&&SUPABASE_ANON_KEY.length>20)sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY)}catch(e){sb=null}
 let uid=null,ready=false,profs={},trips=[],msgs=[],role=sg.get('holpin_role','pasajero'),view='buscar';
 const dflt=ini('?','#8e8e93');
 const who=id=>{const p=profs[id]||{};return{name:p.name||'Usuario',photo:/^data:image\//.test(p.photo||'')?p.photo:dflt}};
@@ -116,12 +151,13 @@ async function load(){
  msgs=(m.data||[]).map(x=>({id:x.id,fromId:x.from_id,toId:x.to_id,text:x.body,route:x.route||'',ts:new Date(x.created_at).getTime(),read:x.read}));
  ready=true;renderAll()}
 
-function card(t){
+const seen=new Set();
+function card(t,i=0){
  const out=t.left<=0,own=t.driverId===uid,w=who(t.driverId);
  let a='';
  if(own)a=`<span class="meta">Asientos libres</span><button class="btn sec sm" data-a="dec" data-id="${esc(t.id)}">−</button><b>${t.left}/${t.seats}</b><button class="btn sec sm" data-a="inc" data-id="${esc(t.id)}">+</button><button class="btn sec sm" data-a="del" data-id="${esc(t.id)}" style="margin-left:auto;color:var(--red)">Eliminar</button>`;
  else a=`<button class="btn sm" data-a="ask" data-id="${esc(t.id)}" ${out?'disabled':''}>¿Sigue disponible?</button>`;
- return `<article class="card"><div class="row"><img class="av" src="${esc(w.photo)}" alt=""><div class="g"><b>${esc(w.name)}</b><br><small>Conductor</small></div><span class="price">${money(t.price)}</span></div>
+ return `<article class="card${seen.has(t.id)?'':' new'}" style="--i:${Math.min(i,8)}"><div class="row"><img class="av" src="${esc(w.photo)}" alt=""><div class="g"><b>${esc(w.name)}</b><br><small>Conductor</small></div><span class="price">${money(t.price)}</span></div>
  <div class="route">${esc(t.from)}<i>→</i>${esc(t.to)}</div><div class="meta">Sale ${fmt(t.when)}</div>
  <div class="meta" style="margin-top:6px">${out?`<span class="badge">Agotado</span> Desaparece en ${left(t)}`:`<span class="ok">${t.left} ${t.left===1?'asiento disponible':'asientos disponibles'}</span>`}</div>
  <div class="acts">${a}</div></article>`}
@@ -131,7 +167,7 @@ function renderList(){
  const r=live().filter(t=>new Date(t.when).getTime()>n&&nrm(t.from).includes(f)&&nrm(t.to).includes(to)).sort((a,b)=>a.when<b.when?-1:1);
  $('#list').innerHTML=r.length?r.map(card).join(''):'<div class="empty">No hay viajes para esa búsqueda.</div>';
  const m=live().filter(t=>t.driverId===uid);
- $('#mine').innerHTML=m.length?m.map(card).join(''):'<div class="empty">Todavía no publicaste viajes.</div>'}
+ $('#mine').innerHTML=m.length?m.map(card).join(''):'<div class="empty">Todavía no publicaste viajes.</div>';r.concat(m).forEach(x=>seen.add(x.id))}
 function renderMsgs(){
  const mine=msgs.sort((a,b)=>b.ts-a.ts);
  $('#msgs').innerHTML=!uid?'<div class="empty">Iniciá sesión para ver tus mensajes.</div>':mine.length?mine.map(m=>{const rx=m.toId===uid,o=who(rx?m.fromId:m.toId);return `<div class="msg"><img class="av" src="${esc(o.photo)}" alt=""><div><b>${esc(rx?o.name:'Para '+o.name)}</b> <small class="meta">· ${esc(m.route)} · ${rx?'recibido':'enviado'}</small><div>${esc(m.text)}</div></div></div>`}).join(''):'<div class="empty">No tenés mensajes.</div>';
@@ -211,7 +247,7 @@ $('#pub').onclick=async()=>{
  ['#pFrom','#pTo','#pDate','#pTime','#pPrice'].forEach(i=>$(i).value='');toast('Viaje publicado');await load();show('buscar')};
 
 function boot(){
- if(!sb){$('#list').innerHTML='<div class="empty">Falta configurar Supabase: completá SUPABASE_URL y SUPABASE_ANON_KEY en el archivo.</div>';return}
+ if(!sb){$('#list').innerHTML='<div class="empty">Falta configurar Supabase: pegá tu URL y tu clave anon entre las comillas, al final del archivo, en el bloque «PASO 1».</div>';return}
  $('#list').innerHTML='<div class="empty">Cargando…</div>';
  sb.auth.onAuthStateChange((ev,s)=>{uid=s&&s.user?s.user.id:null;
   setTimeout(async()=>{await load();
