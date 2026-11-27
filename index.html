@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
 <title>Holpin — Coordiná tus viajes</title>
 <style>
 :root{--bg:#fbfbfd;--card:#fff;--tx:#1d1d1f;--tx2:#6e6e73;--line:#d2d2d7;--blue:#0071e3;--red:#ff3b30;--green:#1d9b4a;--glass:rgba(251,251,253,.8);--fill:#f5f5f7;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -143,7 +142,6 @@ b.bump{display:inline-block;animation:bump .5s ease}
 <h2>Mis viajes</h2><div id="mine"></div></section>
 
 <section id="v-mensajes" hidden><h2 style="margin-top:0">Mensajes</h2><div class="panel" id="msgs"></div></section>
-<div class="meta" style="text-align:center;padding:0 0 28px;font-size:12px">Holpin · versión chat 4</div>
 </main>
 <datalist id="cities"><option>Buenos Aires</option><option>Córdoba</option><option>Rosario</option><option>Mendoza</option><option>La Plata</option><option>Mar del Plata</option><option>Tucumán</option><option>Salta</option><option>Santa Fe</option><option>Neuquén</option><option>Bariloche</option><option>Paraná</option><option>Posadas</option><option>Corrientes</option><option>San Luis</option><option>Bahía Blanca</option></datalist>
 <div class="ov" id="ov" hidden><div class="sheet" id="sheet"></div></div><div class="sug" id="sug" hidden></div><div id="toast"></div>
@@ -184,7 +182,6 @@ async function load(){
  profs={};(p.data||[]).forEach(x=>profs[x.id]=x);
  trips=(t.data||[]).map(x=>({id:x.id,driverId:x.driver_id,from:x.origin,to:x.destination,when:x.departs_at,price:x.price,seats:x.seats,left:x.seats_left,soldOutAt:x.sold_out_at?new Date(x.sold_out_at).getTime():null}));
  msgs=(m.data||[]).map(x=>({id:x.id,tripId:x.trip_id,fromId:x.from_id,toId:x.to_id,text:x.body,route:x.route||'',ts:new Date(x.created_at).getTime(),read:x.read}));
- if(m.error&&!window._me){window._me=1;console.error(m.error);toast('No se pudieron cargar los mensajes: '+m.error.message)}
  ready=true;renderAll()}
 
 const seen=new Set(),lastLeft=new Map();
