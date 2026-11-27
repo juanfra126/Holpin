@@ -35,7 +35,7 @@ create policy "Trip requests visible to involved users"
 on public.trip_requests for select to authenticated
 using (
   passenger_id = auth.uid()
-  or exists (select 1 from public.trips t where t.id = trip_id and t.driver_id = auth.uid())
+  or exists (select 1 from public.trips t where t.id = trip_requests.trip_id and t.driver_id = auth.uid())
 );
 
 drop policy if exists "Passengers can apply to trips" on public.trip_requests;
@@ -46,7 +46,7 @@ with check (
   and status = 'pending'
   and exists (
     select 1 from public.trips t
-    where t.id = trip_id and t.driver_id <> auth.uid()
+    where t.id = trip_requests.trip_id and t.driver_id <> auth.uid()
       and t.seats_left > 0 and t.completed_at is null
   )
 );
@@ -70,10 +70,10 @@ with check (
   and exists (
     select 1 from public.trips t
     join public.trip_requests r on r.trip_id = t.id
-    where t.id = trip_id
-      and t.driver_id = driver_id
+    where t.id = trip_ratings.trip_id
+      and t.driver_id = trip_ratings.driver_id
       and t.completed_at is not null
-      and r.passenger_id = auth.uid()
+      and r.passenger_id = trip_ratings.passenger_id
       and r.status = 'accepted'
   )
 );
