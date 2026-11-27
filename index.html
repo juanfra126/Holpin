@@ -400,6 +400,7 @@ function authSheet(){
 function profile(first){
  const p=meP();let photo=p?p.photo:'';
  sheet(`<h3>${first?'Creá tu perfil':'Tu perfil'}</h3><p>Para viajar o conducir necesitás un nombre y una foto.</p>
+ <div class="meta" style="margin:0 0 12px">Calificación como conductor: ${ratingSummary(uid)}</div>
  <div class="pic"><img class="av" id="pPrev" src="${esc(photo||dflt)}" alt=""><label class="btn sec sm" style="margin:0;cursor:pointer">Elegir foto<input id="pFile" type="file" accept="image/*" hidden></label></div>
  <label>Nombre</label><input id="pName" value="${p?esc(p.name):''}" placeholder="Tu nombre" maxlength="30">
  <div class="acts"><button class="btn" id="pSave" disabled>Guardar</button>${first?'':'<button class="btn sec" id="pCancel">Cancelar</button>'}<button class="btn sec" id="pOut" style="margin-left:auto;color:var(--red)">Cerrar sesión</button></div>`,first);
