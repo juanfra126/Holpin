@@ -691,8 +691,38 @@ function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clea
 function sheet(h,lock){$('#sheet').innerHTML=h;$('#ov').hidden=false;$('#ov').dataset.lock=lock?1:''}
 function close(){$('#ov').hidden=true}
 
-function installHelp(){
- sheet('<h3>Tené Holpin siempre a mano</h3><p>¿Qué celular utilizás?</p><div class="install-device"><button class="btn sec" id="installIphone">iPhone (iOS)</button><button class="btn sec" id="installSamsung">Samsung (Android)</button></div><div class="acts"><button class="btn sec" id="installClose">Cerrar</button></div>');
+let deferredInstallPrompt=null;
+window.addEventListener('beforeinstallprompt',e=>{
+ e.preventDefault();
+ deferredInstallPrompt=e;
+ updateInstallHelp();
+});
+window.addEventListener('appinstalled',()=>{
+ deferredInstallPrompt=null;
+ updateInstallHelp();
+ toast('¡Holpin se agregó a tu pantalla de inicio!');
+});
+async function installHelp(){
+ if(holpinIsInstalled())return;
+ if(deferredInstallPrompt){
+  const promptEvent=deferredInstallPrompt;
+  deferredInstallPrompt=null;
+  updateInstallHelp();
+  try{
+   await promptEvent.prompt();
+   const choice=await promptEvent.userChoice;
+   if(choice&&choice.outcome==='accepted')toast('¡Genial! Holpin se está agregando a tu pantalla de inicio.');
+   else toast('Podés agregar Holpin cuando quieras desde este botón.');
+  }catch(e){
+   console.warn('No se pudo abrir el instalador nativo:',e);
+   installHelpInstructions();
+  }
+  return;
+ }
+ installHelpInstructions();
+}
+function installHelpInstructions(){
+ sheet('<h3>Tené Holpin siempre a mano</h3><p>Elegí tu celular para ver cómo agregar Holpin a la pantalla de inicio.</p><div class="install-device"><button class="btn sec" id="installIphone">iPhone (iOS)</button><button class="btn sec" id="installSamsung">Android / Samsung</button></div><div class="acts"><button class="btn sec" id="installClose">Cerrar</button></div>');
  $('#installIphone').onclick=()=>installSteps('iphone');
  $('#installSamsung').onclick=()=>installSteps('samsung');
  $('#installClose').onclick=close;
@@ -717,7 +747,10 @@ function holpinIsInstalled(){
 }
 function updateInstallHelp(){
  const button=$('#installHelp');
- if(button)button.hidden=holpinIsInstalled();
+ if(button){
+  button.hidden=holpinIsInstalled();
+  button.textContent=deferredInstallPrompt?'＋ Instalar Holpin':'＋ Agregar Holpin a la pantalla de inicio';
+ }
 }
 $('#installHelp').onclick=installHelp;
 updateInstallHelp();
