@@ -391,8 +391,14 @@ function notify(m){
  const o=who(m.from_id),inChat=chat&&chat.other===m.from_id&&view==='mensajes'&&!document.hidden;
  if(inChat)return;
  beep();try{navigator.vibrate&&navigator.vibrate([120,60,120])}catch(e){}
- if(document.hidden){if(!pushOn&&'Notification' in window&&Notification.permission==='granted')pushNote(o.name,m.body,o.photo)}
- else toast('Nuevo mensaje de '+o.name)}
+ if(!document.hidden){
+  toast('Nuevo mensaje de '+o.name);
+  if('Notification' in window&&Notification.permission==='granted')pushNote(o.name,m.body,o.photo);
+ }else if(!pushOn&&'Notification' in window&&Notification.permission==='granted'){
+  // Respaldo mientras la página sigue viva; con la app cerrada envía el servidor.
+  pushNote(o.name,m.body,o.photo);
+ }
+}
 const VAPID_PUBLIC='BAcF6yvUJWDuukXhThyw4SjPrCPJAFq0NclE6ciivyOwLiPz9sjqopDuuRJKMQtuDigaVQJV8SYBwS4jXTWFlZc';
 let pushOn=false;
 const u8=b=>{const s=atob((b+'='.repeat((4-b.length%4)%4)).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from([...s].map(c=>c.charCodeAt(0)))};
@@ -402,8 +408,14 @@ async function syncPush(ask){
   if(Notification.permission==='default'&&ask)await Notification.requestPermission();
   if(Notification.permission!=='granted')return false;
   const reg=await Promise.race([navigator.serviceWorker.ready,new Promise((_,j)=>setTimeout(()=>j(new Error('no se encontró sw.js')),5000))]);
+  const appKey=u8(VAPID_PUBLIC);
   let s=await reg.pushManager.getSubscription();
-  if(!s)s=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:u8(VAPID_PUBLIC)});
+  if(s){
+   const oldKey=s.options&&s.options.applicationServerKey;
+   const same=oldKey&&oldKey.byteLength===appKey.byteLength&&appKey.every((v,i)=>v===new Uint8Array(oldKey)[i]);
+   if(!same){await s.unsubscribe();s=null}
+  }
+  if(!s)s=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:appKey});
   const j=s.toJSON();
   const r=await sb.from('push_subscriptions').upsert({endpoint:j.endpoint,user_id:uid,sub:j},{onConflict:'endpoint'});
   if(r.error){console.error(r.error);toast('No se pudo activar el aviso: '+r.error.message);return false}
