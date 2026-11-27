@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
 <title>Holpin — Coordiná tus viajes</title>
 <style>
 :root{--bg:#fbfbfd;--card:#fff;--tx:#1d1d1f;--tx2:#6e6e73;--line:#d2d2d7;--blue:#0071e3;--red:#ff3b30;--green:#1d9b4a;--glass:rgba(251,251,253,.8);--fill:#f5f5f7;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -123,8 +124,37 @@ b.bump{display:inline-block;animation:bump .5s ease}
 .bub.th{align-self:flex-start;background:var(--fill);border-bottom-left-radius:6px}
 .bub time{display:block;font-size:11px;opacity:.7;margin-top:2px}
 .cform{display:flex;gap:8px;padding-top:12px;border-top:1px solid var(--line)}
+/* ---- Chat: animaciones, eliminar y avisos ---- */
+@keyframes bub{from{opacity:0;transform:translateY(12px) scale(.9)}to{opacity:1;transform:none}}
+@keyframes out{to{opacity:0;transform:translateX(34px) scale(.9)}}
+@keyframes ring{0%,100%{transform:rotate(0)}15%{transform:rotate(16deg)}30%{transform:rotate(-14deg)}45%{transform:rotate(9deg)}60%{transform:rotate(-6deg)}75%{transform:rotate(0)}}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,59,48,.55)}100%{box-shadow:0 0 0 10px rgba(255,59,48,0)}}
+@keyframes slide{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+.bub.new{animation:bub .38s cubic-bezier(.2,.9,.3,1.25) both;animation-delay:calc(var(--i,0)*40ms)}
+.bub.me.new{transform-origin:100% 100%}
+.bub.th.new{transform-origin:0 100%}
+.bub.out,.conv.out{animation:out .3s ease forwards}
+.bub{transition:transform .2s}
+.bub:hover{transform:scale(1.02)}
+.bdel{border:0;background:none;color:inherit;font:inherit;font-size:11px;opacity:.65;cursor:pointer;margin-left:8px;padding:0;text-decoration:underline;transition:opacity .2s}
+.bdel:hover{opacity:1}
+.bdel[data-armed]{opacity:1;font-weight:600;color:#ffd1ce}
+.bub.th .bdel[data-armed]{color:var(--red)}
+.conv{padding-left:10px;padding-right:10px;border-radius:14px;transition:background .2s,transform .25s cubic-bezier(.2,.8,.2,1)}
+.conv:hover{background:var(--fill);transform:translateX(4px)}
+.conv.new{animation:slide .45s cubic-bezier(.2,.8,.2,1) both;animation-delay:calc(var(--i,0)*60ms)}
+.chath{animation:fade .3s both}
+.chath .av{transition:transform .3s}
+.chath .av:hover{transform:rotate(-6deg) scale(1.1)}
+.cform input{transition:border-color .2s,box-shadow .2s,transform .2s}
+.cform input:focus{transform:scale(1.01)}
+.cform .btn:active:not(:disabled){transform:scale(.9) rotate(-3deg)}
+.dot{animation:bounce .45s both,pulse 2s 1.2s infinite}
+#bell{animation:ring 2.4s ease-in-out 1s infinite;transform-origin:50% 0}
+#bell:hover{animation-play-state:paused}
+@media (prefers-reduced-motion:reduce){.bub.new,.conv.new,.bub.out,.conv.out{animation:none!important}}
 </style></head><body>
-<header class="nav"><b>Holpin</b><nav id="tabs"></nav><button class="avbtn" id="meBtn" aria-label="Perfil"></button></header>
+<header class="nav"><b>Holpin</b><nav id="tabs"></nav><button class="btn sec sm" id="bell" title="Activar avisos de mensajes nuevos" aria-label="Activar avisos" hidden>🔔</button><button class="avbtn" id="meBtn" aria-label="Perfil"></button></header>
 <main>
 <section class="hero" id="hero"><h1>Viajá acompañado.</h1><p>Encontrá un lugar en un auto o publicá tu viaje entre ciudades y repartí los gastos.</p>
 <div class="seg" id="roleSeg"><span class="pill"></span><button data-r="pasajero">Soy pasajero</button><button data-r="conductor">Soy conductor</button></div></section>
@@ -142,6 +172,7 @@ b.bump{display:inline-block;animation:bump .5s ease}
 <h2>Mis viajes</h2><div id="mine"></div></section>
 
 <section id="v-mensajes" hidden><h2 style="margin-top:0">Mensajes</h2><div class="panel" id="msgs"></div></section>
+<div class="meta" style="text-align:center;padding:0 0 28px;font-size:12px">Holpin · versión chat 5</div>
 </main>
 <datalist id="cities"><option>Buenos Aires</option><option>Córdoba</option><option>Rosario</option><option>Mendoza</option><option>La Plata</option><option>Mar del Plata</option><option>Tucumán</option><option>Salta</option><option>Santa Fe</option><option>Neuquén</option><option>Bariloche</option><option>Paraná</option><option>Posadas</option><option>Corrientes</option><option>San Luis</option><option>Bahía Blanca</option></datalist>
 <div class="ov" id="ov" hidden><div class="sheet" id="sheet"></div></div><div class="sug" id="sug" hidden></div><div id="toast"></div>
@@ -182,6 +213,7 @@ async function load(){
  profs={};(p.data||[]).forEach(x=>profs[x.id]=x);
  trips=(t.data||[]).map(x=>({id:x.id,driverId:x.driver_id,from:x.origin,to:x.destination,when:x.departs_at,price:x.price,seats:x.seats,left:x.seats_left,soldOutAt:x.sold_out_at?new Date(x.sold_out_at).getTime():null}));
  msgs=(m.data||[]).map(x=>({id:x.id,tripId:x.trip_id,fromId:x.from_id,toId:x.to_id,text:x.body,route:x.route||'',ts:new Date(x.created_at).getTime(),read:x.read}));
+ if(m.error&&!window._me){window._me=1;console.error(m.error);toast('No se pudieron cargar los mensajes: '+m.error.message)}
  ready=true;renderAll()}
 
 const seen=new Set(),lastLeft=new Map();
@@ -207,7 +239,8 @@ const ckey=m=>other(m)+'|'+(m.tripId||m.route);
 function convs(){const g={};msgs.forEach(m=>{(g[ckey(m)]=g[ckey(m)]||[]).push(m)});
  return Object.entries(g).map(([k,a])=>{a.sort((x,y)=>x.ts-y.ts);const l=a[a.length-1];
   return{key:k,other:other(l),tripId:l.tripId,route:l.route,list:a,last:l,unread:a.filter(m=>m.toId===uid&&!m.read).length}}).sort((x,y)=>y.last.ts-x.last.ts)}
-const bubble=m=>`<div class="bub ${m.fromId===uid?'me':'th'}">${esc(m.text)}<time>${new Date(m.ts).toLocaleString('es-AR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</time></div>`;
+const seenM=new Set(),seenC=new Set();
+const bubble=(m,i)=>`<div class="bub ${m.fromId===uid?'me':'th'}${seenM.has(m.id)?'':' new'}" style="--i:${i||0}">${esc(m.text)}<time>${new Date(m.ts).toLocaleString('es-AR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}<button class="bdel" data-del="${esc(m.id)}">Eliminar</button></time></div>`;
 function renderMsgs(){
  const box=$('#msgs');
  if(!uid){chat=null;box.dataset.mode='';box.innerHTML='<div class="empty">Iniciá sesión para ver tus mensajes.</div>';renderTabs();return}
@@ -215,18 +248,18 @@ function renderMsgs(){
  if(chat){
   const c=cs.find(x=>x.key===chat.key),list=c?c.list:[],o=who(chat.other);
   if(box.dataset.mode!=='chat'){box.dataset.mode='chat';
-   box.innerHTML=`<div class="chath"><button class="btn sec sm" id="cBack">‹ Volver</button><img class="av" src="${esc(o.photo)}" alt=""><div class="g"><b>${esc(o.name)}</b><br><small class="meta">${esc(chat.route)}</small></div></div><div id="cLog"></div><form id="cForm" class="cform"><input id="cTxt" placeholder="Escribí un mensaje…" autocomplete="off" maxlength="500"><button class="btn" id="cSend" type="submit">Enviar</button></form>`;
+   box.innerHTML=`<div class="chath"><button class="btn sec sm" id="cBack">‹ Volver</button><img class="av" src="${esc(o.photo)}" alt=""><div class="g"><b>${esc(o.name)}</b><br><small class="meta">${esc(chat.route)}</small></div><button class="btn sec sm" id="cDelAll" style="color:var(--red)">Eliminar chat</button></div><div id="cLog"></div><form id="cForm" class="cform"><input id="cTxt" placeholder="Escribí un mensaje…" autocomplete="off" maxlength="500"><button class="btn" id="cSend" type="submit">Enviar</button></form>`;
    $('#cBack').onclick=()=>{chat=null;renderMsgs()};
    $('#cForm').onsubmit=sendChat;
    $('#cLog').dataset.first=1}
   const log=$('#cLog'),near=log.dataset.first||log.scrollHeight-log.scrollTop-log.clientHeight<80;
-  log.innerHTML=list.length?list.map(bubble).join(''):'<div class="empty">Escribí el primer mensaje.</div>';
+  let k=0;log.innerHTML=list.length?list.map(m=>bubble(m,seenM.has(m.id)?0:Math.min(k++,10))).join(''):'<div class="empty">Escribí el primer mensaje.</div>';list.forEach(m=>seenM.add(m.id));
   if(near){log.scrollTop=log.scrollHeight;delete log.dataset.first}
   if(list.some(m=>m.toId===uid&&!m.read)&&!marking){marking=true;
    sb.from('messages').update({read:true}).eq('to_id',uid).eq('from_id',chat.other).eq('read',false).then(r=>{marking=false;if(!r.error)load()})}
  }else{
   box.dataset.mode='list';
-  box.innerHTML=cs.length?cs.map(c=>{const o=who(c.other),l=c.last;return `<div class="conv" data-chat="${esc(c.key)}"><img class="av" src="${esc(o.photo)}" alt=""><div class="g"><b>${esc(o.name)}</b> <small class="meta">· ${esc(c.route)}</small><div class="meta" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l.fromId===uid?'Vos: ':''}${esc(l.text)}</div></div>${c.unread?`<span class="dot">${c.unread}</span>`:''}</div>`}).join(''):'<div class="empty">No tenés mensajes.</div>'}
+  box.innerHTML=cs.length?cs.map((c,i)=>{const o=who(c.other),l=c.last;return `<div class="conv${seenC.has(c.key)?'':' new'}" style="--i:${Math.min(i,8)}" data-chat="${esc(c.key)}"><img class="av" src="${esc(o.photo)}" alt=""><div class="g"><b>${esc(o.name)}</b> <small class="meta">· ${esc(c.route)}</small><div class="meta" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l.fromId===uid?'Vos: ':''}${esc(l.text)}</div></div>${c.unread?`<span class="dot">${c.unread}</span>`:''}</div>`}).join(''):'<div class="empty">No tenés mensajes.</div>';cs.forEach(c=>seenC.add(c.key))}
  renderTabs()}
 async function sendChat(e){e.preventDefault();
  const i=$('#cTxt'),x=i.value.trim();if(!x||!chat)return;
@@ -235,11 +268,54 @@ async function sendChat(e){e.preventDefault();
  const b=$('#cSend');if(b)b.disabled=false;
  if(r.error){console.error(r.error);toast('No se pudo enviar: '+r.error.message);return}
  i.value='';await load();const t=$('#cTxt');if(t)t.focus()}
-$('#msgs').onclick=e=>{const b=e.target.closest('[data-chat]');if(!b)return;
+function armDel(btn,fn){
+ if(btn.dataset.armed){fn();return}
+ btn.dataset.armed=1;btn.dataset.label=btn.textContent;btn.textContent='¿Seguro?';
+ setTimeout(()=>{if(btn.isConnected&&btn.dataset.armed){btn.dataset.armed='';btn.removeAttribute('data-armed');btn.textContent=btn.dataset.label}},3000)}
+async function delMsg(id,btn){
+ const bub=btn.closest('.bub');if(bub)bub.classList.add('out');
+ await new Promise(r=>setTimeout(r,280));
+ const r=await sb.from('messages').delete().eq('id',id).select();
+ if(r.error||!r.data||!r.data.length){console.error(r.error);toast('No se pudo eliminar'+(r.error?': '+r.error.message:'. Falta la política de eliminación en Supabase.'));load();return}
+ await load()}
+async function delChat(){
+ const c=convs().find(x=>x.key===chat.key);
+ if(!c||!c.list.length){chat=null;renderMsgs();return}
+ document.querySelectorAll('#cLog .bub').forEach(b=>b.classList.add('out'));
+ await new Promise(r=>setTimeout(r,300));
+ const r=await sb.from('messages').delete().in('id',c.list.map(m=>m.id)).select();
+ if(r.error||!r.data||!r.data.length){console.error(r.error);toast('No se pudo eliminar'+(r.error?': '+r.error.message:'. Falta la política de eliminación en Supabase.'));load();return}
+ chat=null;toast('Chat eliminado');await load()}
+$('#msgs').onclick=e=>{
+ const d=e.target.closest('[data-del]');if(d)return armDel(d,()=>delMsg(d.dataset.del,d));
+ const da=e.target.closest('#cDelAll');if(da)return armDel(da,delChat);
+ const b=e.target.closest('[data-chat]');if(!b)return;
  const c=convs().find(x=>x.key===b.dataset.chat);
  if(c){chat={key:c.key,other:c.other,tripId:c.tripId,route:c.route};renderMsgs();const i=$('#cTxt');if(i)i.focus()}};
+
+/* ---- Avisos de mensajes nuevos ---- */
+let swReg=null,ac=null;
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').then(r=>{swReg=r}).catch(()=>{});
+function beep(){try{ac=ac||new (window.AudioContext||window.webkitAudioContext)();const o=ac.createOscillator(),g=ac.createGain(),t=ac.currentTime;
+ o.type='sine';o.frequency.value=880;g.gain.setValueAtTime(.001,t);g.gain.exponentialRampToValueAtTime(.15,t+.02);g.gain.exponentialRampToValueAtTime(.001,t+.35);
+ o.connect(g);g.connect(ac.destination);o.start();o.stop(t+.36)}catch(e){}}
+async function pushNote(title,body,icon){
+ const opt={body,icon,tag:'holpin-msg',renotify:true};
+ try{if(swReg&&swReg.showNotification){await swReg.showNotification(title,opt);return}}catch(e){}
+ try{new Notification(title,opt)}catch(e){}}
+function notify(m){
+ const o=who(m.from_id),inChat=chat&&chat.other===m.from_id&&view==='mensajes'&&!document.hidden;
+ if(inChat)return;
+ beep();try{navigator.vibrate&&navigator.vibrate([120,60,120])}catch(e){}
+ if(document.hidden&&'Notification' in window&&Notification.permission==='granted')pushNote(o.name,m.body,o.photo);
+ else toast('Nuevo mensaje de '+o.name)}
+$('#bell').onclick=async()=>{
+ try{const p=await Notification.requestPermission();toast(p==='granted'?'Avisos activados':'Avisos bloqueados. Habilitalos desde el candado del navegador.')}catch(e){}
+ renderTabs()};
 function renderTabs(){
  const un=msgs.filter(m=>m.toId===uid&&!m.read).length;
+ document.title=(un?'('+un+') ':'')+'Holpin — Coordiná tus viajes';
+ $('#bell').hidden=!(uid&&'Notification' in window&&Notification.permission==='default');
  const tabs=[['buscar','Viajes']].concat(role==='conductor'?[['publicar','Publicar']]:[],[['mensajes','Mensajes']]);
  $('#tabs').innerHTML=tabs.map(([k,l])=>`<button data-v="${k}" class="${view===k?'on':''}">${l}${k==='mensajes'&&un?`<span class="dot">${un}</span>`:''}</button>`).join('');
  $('#meBtn').innerHTML=meP()?`<img class="av" src="${esc(who(uid).photo)}" alt="">`:'<span class="btn sec sm">Entrar</span>'}
@@ -319,9 +395,11 @@ function boot(){
  sb.auth.onAuthStateChange((ev,s)=>{uid=s&&s.user?s.user.id:null;
   setTimeout(async()=>{await load();
    if(uid){if(!$('#ov').hidden&&$('#sheet').querySelector('#aE'))close();if(!meP()&&$('#ov').hidden)profile(true)}},0)});
- sb.channel('holpin').on('postgres_changes',{event:'*',schema:'public'},()=>load()).subscribe();
+ sb.channel('holpin').on('postgres_changes',{event:'*',schema:'public'},p=>{
+  if(p.table==='messages'&&p.eventType==='INSERT'&&p.new&&uid&&p.new.to_id===uid)notify(p.new);
+  load()}).subscribe();
  setInterval(()=>{renderList();if(uid)sb.from('trips').delete().eq('driver_id',uid).lt('sold_out_at',new Date(Date.now()-H3).toISOString()).then(()=>{})},30000)}
-const CITIES=['Buenos Aires','Córdoba','Rosario','Mendoza','La Plata','Mar del Plata','Tucumán','Salta','Santa Fe','Neuquén','Bariloche','Paraná','Posadas','Corrientes','San Luis','Bahía Blanca'];
+const CITIES=[];
 let sugEl=null;
 function sugShow(inp){
  const q=nrm(inp.value),s=new Set(CITIES);trips.forEach(t=>{s.add(t.from);s.add(t.to)});
