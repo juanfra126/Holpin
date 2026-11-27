@@ -55,7 +55,7 @@ drop policy if exists "Drivers can manage trip requests" on public.trip_requests
 create policy "Drivers can manage trip requests"
 on public.trip_requests for update to authenticated
 using (exists (select 1 from public.trips t where t.id = trip_requests.trip_id and t.driver_id = auth.uid()))
-with check (exists (select 1 from public.trips t where t.id = trip_id and t.driver_id = auth.uid()));
+with check (exists (select 1 from public.trips t where t.id = trip_requests.trip_id and t.driver_id = auth.uid()));
 
 drop policy if exists "Ratings are publicly readable" on public.trip_ratings;
 create policy "Ratings are publicly readable"
