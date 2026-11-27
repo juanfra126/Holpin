@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="es"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
 <link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#fbfbfd" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)"><link rel="apple-touch-icon" href="logo-negro.png"><link rel="icon" type="image/png" href="logo-negro.png" media="(prefers-color-scheme: light)"><link rel="icon" type="image/png" href="logo-blanco.png" media="(prefers-color-scheme: dark)">
 <title>Holpin — Coordiná tus viajes</title>
@@ -450,6 +450,52 @@ section.nav-enter-back{animation:navSlideBack .48s cubic-bezier(.2,.8,.2,1) both
 .profile-main{padding:0 28px 28px}.profile-top{display:flex;align-items:flex-end;gap:18px;margin-top:-54px;position:relative}.profile-avatar{width:112px;height:112px;border-radius:50%;object-fit:cover;border:5px solid var(--card);background:var(--fill);box-shadow:0 5px 18px #0002}.profile-heading{padding-bottom:8px;min-width:0}.profile-heading h2{margin:3px 0;font-size:30px}.profile-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:24px 0}.profile-stat{padding:18px;border:1px solid var(--line);border-radius:17px;background:var(--fill)}.profile-stat strong{display:block;font-size:26px;letter-spacing:-.04em}.profile-stat span{font-size:12px;color:var(--tx2)}.profile-edit{border-top:1px solid var(--line);padding-top:20px}.profile-edit h3{margin:0 0 5px}.profile-edit p{color:var(--tx2);margin:0 0 18px}.profile-photo-row{display:flex;align-items:center;gap:12px;margin-bottom:18px}.profile-photo-row .av{width:64px;height:64px}.profile-file{display:inline-flex;align-items:center}.profile-actions{display:flex;gap:10px;justify-content:space-between;margin-top:22px;padding-top:18px;border-top:1px solid var(--line)}#profileLogout{color:var(--red)}
 @media(max-width:520px){.profile-main{padding:0 17px 22px}.profile-cover{height:120px}.profile-avatar{width:94px;height:94px}.profile-heading h2{font-size:24px}.profile-stats{gap:7px}.profile-stat{padding:12px 9px}.profile-stat strong{font-size:22px}.profile-stat span{font-size:11px}.profile-actions{flex-direction:column}.profile-actions .btn{width:100%}}
 @media(prefers-reduced-motion:reduce){section.nav-enter-forward,section.nav-enter-back{animation:none!important}}
+
+/* Holpin glass navigation + stronger app-like transitions */
+.nav{background:var(--glass)!important;backdrop-filter:saturate(180%) blur(24px)!important;-webkit-backdrop-filter:saturate(180%) blur(24px)!important;border-bottom:1px solid color-mix(in srgb,var(--line) 65%,transparent)}
+.nav #tabs{background:var(--glass);border:1px solid color-mix(in srgb,var(--line) 65%,transparent);border-radius:999px;padding:4px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 4px 18px rgba(20,36,58,.055)}
+.nav #tabs button{position:relative;overflow:hidden}
+.nav #tabs button.on{background:rgba(128,150,180,.17)!important;color:var(--tx)!important;box-shadow:inset 0 0 0 1px rgba(128,150,180,.12)}
+.nav #tabs button.on svg{animation:navIconArrive .58s cubic-bezier(.16,1,.3,1) both}
+@keyframes navIconArrive{0%{transform:translateY(9px) scale(.72);opacity:.25}65%{transform:translateY(-2px) scale(1.16);opacity:1}100%{transform:translateY(0) scale(1)}}
+@keyframes navLabelArrive{0%{opacity:0;transform:translateY(5px)}100%{opacity:1;transform:translateY(0)}}
+.nav #tabs button.on span:not(.dot){animation:navLabelArrive .42s .06s both}
+@keyframes screenGlideForward{0%{opacity:0;transform:translate3d(76px,8px,0) scale(.975);filter:blur(5px)}55%{opacity:1;filter:blur(1px)}100%{opacity:1;transform:translate3d(0,0,0) scale(1);filter:blur(0)}}
+@keyframes screenGlideBack{0%{opacity:0;transform:translate3d(-76px,8px,0) scale(.975);filter:blur(5px)}55%{opacity:1;filter:blur(1px)}100%{opacity:1;transform:translate3d(0,0,0) scale(1);filter:blur(0)}}
+section.nav-enter-forward{animation:screenGlideForward .72s cubic-bezier(.16,1,.3,1) both!important;will-change:transform,opacity,filter}
+section.nav-enter-back{animation:screenGlideBack .72s cubic-bezier(.16,1,.3,1) both!important;will-change:transform,opacity,filter}
+.profile-cover{position:relative;height:190px;background-color:#243b59;background-position:center;background-size:cover;transition:background-image .25s}
+.cover-change{position:absolute;right:16px;top:14px;display:flex;align-items:center;gap:7px;padding:9px 13px;border-radius:999px;color:white!important;background:rgba(18,27,42,.42);border:1px solid rgba(255,255,255,.28);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);font-size:12px!important;font-weight:600;cursor:pointer;box-shadow:0 4px 16px #0002}
+.profile-top{align-items:center;gap:18px;margin-top:-46px;padding:0 4px 4px}
+.profile-avatar{position:relative;z-index:1;flex:none}
+.profile-heading{padding:50px 0 0;min-width:0}
+.profile-heading h2{font-size:clamp(24px,4vw,32px);line-height:1.12;overflow-wrap:anywhere;margin:5px 0}
+.profile-heading .meta{font-size:12px;overflow-wrap:anywhere}
+.profile-edit{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+.profile-edit>div:first-child{margin-bottom:2px}
+.profile-edit label[for="profileNameInput"]{font-size:13px;font-weight:650;color:var(--tx);margin:6px 0 0 2px}
+.profile-edit input{max-width:520px}
+.profile-actions{justify-content:flex-end}
+@media(max-width:700px){
+ #tabs{position:fixed;z-index:25;left:12px;right:12px;bottom:calc(9px + env(safe-area-inset-bottom,0px));top:auto;background:var(--glass)!important;border:1px solid color-mix(in srgb,var(--line) 72%,transparent);border-radius:25px;box-shadow:0 12px 36px rgba(0,0,0,.14);backdrop-filter:saturate(180%) blur(26px)!important;-webkit-backdrop-filter:saturate(180%) blur(26px)!important;padding:8px 7px;justify-content:space-around;overflow:visible}
+ #tabs button{border-radius:16px}
+ #tabs button.on{background:rgba(128,150,180,.2)!important}
+ main{padding-bottom:calc(112px + env(safe-area-inset-bottom,0px))}
+}
+@media(max-width:520px){
+ .profile-cover{height:155px}
+ .profile-top{align-items:flex-end;gap:12px;margin-top:-38px;padding:0 1px}
+ .profile-avatar{width:82px;height:82px;border-width:4px}
+ .profile-heading{padding:0 0 5px;flex:1}
+ .profile-heading h2{font-size:22px}
+ .profile-heading .meta{font-size:11px}
+ .profile-main{padding:0 16px 22px}
+ .profile-edit input{max-width:none}
+}
+html,body{-webkit-text-size-adjust:100%;overscroll-behavior-x:none}
+body{touch-action:pan-y}
+button,a,label{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+@media(prefers-reduced-motion:reduce){section.nav-enter-forward,section.nav-enter-back,.nav #tabs button.on svg,.nav #tabs button.on span:not(.dot){animation:none!important}}
 </style></head><body>
 <header class="nav"><div class="brand"><span class="lg"><img class="lg-l" src="logo-negro.png" alt="" width="64" height="64"><img class="lg-d" src="logo-blanco.png" alt="" width="64" height="64"></span><b>Holpin</b></div><nav id="tabs"></nav><button class="btn sec sm" id="bell" title="Activar avisos de mensajes nuevos" aria-label="Activar avisos" hidden>🔔</button><button class="avbtn" id="meBtn" aria-label="Perfil"></button></header>
 <main>
@@ -480,7 +526,7 @@ section.nav-enter-back{animation:navSlideBack .48s cubic-bezier(.2,.8,.2,1) both
  <div class="activity-history"><h3>Historial de viajes</h3><div id="activityHistory"></div></div>
  </section>
  <section id="v-mensajes" hidden><h2 style="margin-top:0">Mensajes</h2><div class="panel" id="msgs"></div></section>
-<section id="v-perfil" hidden><div class="profile-page"><div class="profile-cover"></div><div class="profile-main"><div class="profile-top"><img class="profile-avatar" id="profileAvatar" src="" alt="Foto de perfil"><div class="profile-heading"><div class="meta">TU CUENTA HOLPIN</div><h2 id="profileName">Mi perfil</h2><div class="meta" id="profileEmail"></div></div></div><div class="profile-stats" id="profileStats"></div><div class="profile-edit"><div><h3>Datos personales</h3><p>Actualizá cómo te ven los demás usuarios.</p></div><div class="profile-photo-row"><img class="av" id="profilePreview" src="" alt=""><label class="btn sec sm profile-file">Cambiar foto<input id="profileFile" type="file" accept="image/*" hidden></label></div><label for="profileNameInput">Nombre</label><input id="profileNameInput" maxlength="30" placeholder="Tu nombre"><div class="acts"><button class="btn" id="profileSave" disabled>Guardar cambios</button></div></div><div class="profile-actions"><button class="btn sec" id="profileActivity">Ver mi actividad</button><button class="btn sec" id="profileLogout">Cerrar sesión</button></div></div></div></section>
+<section id="v-perfil" hidden><div class="profile-page"><div class="profile-cover" id="profileCover"><label class="cover-change" for="profileBannerFile"><span>▧</span> Cambiar banner<input id="profileBannerFile" type="file" accept="image/*" hidden></label></div><div class="profile-main"><div class="profile-top"><img class="profile-avatar" id="profileAvatar" src="" alt="Foto de perfil"><div class="profile-heading"><div class="meta">TU CUENTA HOLPIN</div><h2 id="profileName">Mi perfil</h2><div class="meta" id="profileEmail"></div></div></div><div class="profile-stats" id="profileStats"></div><div class="profile-edit"><div><h3>Datos personales</h3><p>Actualizá cómo te ven los demás usuarios.</p></div><div class="profile-photo-row"><img class="av" id="profilePreview" src="" alt=""><label class="btn sec sm profile-file">Cambiar foto<input id="profileFile" type="file" accept="image/*" hidden></label></div><label for="profileNameInput">Nombre</label><input id="profileNameInput" maxlength="30" placeholder="Tu nombre"><div class="acts"><button class="btn" id="profileSave" disabled>Guardar cambios</button></div></div><div class="profile-actions"><button class="btn sec" id="profileLogout">Cerrar sesión</button></div></div></div></section>
 <div class="meta" style="text-align:center;padding:0 0 28px;font-size:12px">Holpin · versión 1.1</div>
 </main>
 <datalist id="cities"><option>Buenos Aires</option><option>Córdoba</option><option>Rosario</option><option>Mendoza</option><option>La Plata</option><option>Mar del Plata</option><option>Tucumán</option><option>Salta</option><option>Santa Fe</option><option>Neuquén</option><option>Bariloche</option><option>Paraná</option><option>Posadas</option><option>Corrientes</option><option>San Luis</option><option>Bahía Blanca</option></datalist>
@@ -839,14 +885,15 @@ function renderProfile(){
  const p=meP()||{},me=who(uid),driven=trips.filter(t=>t.driverId===uid&&t.completedAt).length,passengerTrips=[...new Set(tripRequests.filter(r=>r.passengerId===uid&&r.status==='accepted').map(r=>trips.find(t=>t.id===r.tripId)).filter(t=>t&&t.completedAt).map(t=>t.id))].length,ratings=tripRatings.filter(x=>x.driverId===uid),avg=ratings.length?(ratings.reduce((a,x)=>a+x.rating,0)/ratings.length).toFixed(1):'—';
  $('#profileAvatar').src=me.photo;$('#profilePreview').src=me.photo;$('#profileName').textContent=me.name;$('#profileEmail').textContent='';const profileUid=uid;sb.auth.getUser().then(({data,error})=>{if(!error&&uid===profileUid&&view==='perfil')$('#profileEmail').textContent=data.user?.email||''});
  $('#profileNameInput').value=p.name||'';
+ const banner=sg.get('holpin_banner_'+uid,'');$('#profileCover').style.backgroundImage=banner?'linear-gradient(180deg,rgba(10,20,35,.08),rgba(10,20,35,.22)),url("'+banner+'")':'';
  $('#profileStats').innerHTML=[['Como conductor',driven],['Como pasajero',passengerTrips],['Calificación',avg]].map(x=>'<div class="profile-stat"><strong>'+x[1]+'</strong><span>'+x[0]+'</span></div>').join('');
  $('#profileSave').disabled=true;
 }
-let profilePhotoDraft='';
+let profilePhotoDraft='',profileBannerDraft='';
 $('#profileNameInput').addEventListener('input',()=>$('#profileSave').disabled=!$('#profileNameInput').value.trim());
 $('#profileFile').onchange=e=>{const f=e.target.files&&e.target.files[0];if(!f)return;if(!f.type.startsWith('image/'))return toast('Elegí una imagen válida');if(f.size>5*1024*1024)return toast('La foto debe pesar menos de 5 MB');const rd=new FileReader();rd.onload=()=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=c.height=240;const z=Math.min(im.width,im.height);c.getContext('2d').drawImage(im,(im.width-z)/2,(im.height-z)/2,z,z,0,0,240,240);profilePhotoDraft=c.toDataURL('image/jpeg',.82);$('#profilePreview').src=profilePhotoDraft;$('#profileAvatar').src=profilePhotoDraft;$('#profileSave').disabled=false};im.src=rd.result};rd.readAsDataURL(f)};
-$('#profileSave').onclick=async()=>{if(!need())return;const b=$('#profileSave');b.disabled=true;const current=meP()||{};const photo=profilePhotoDraft||current.photo||dflt;const r=await sb.from('profiles').upsert({id:uid,name:$('#profileNameInput').value.trim(),photo});if(r.error){toast('No se pudieron guardar los cambios: '+r.error.message);b.disabled=false;return}profilePhotoDraft='';toast('Perfil actualizado');await load();renderProfile()};
-$('#profileActivity').onclick=()=>{activityPeriod='month';show('actividad')};
+$('#profileBannerFile').onchange=e=>{const f=e.target.files&&e.target.files[0];if(!f)return;if(!f.type.startsWith('image/'))return toast('Elegí una imagen válida');if(f.size>10*1024*1024)return toast('El banner debe pesar menos de 10 MB');const rd=new FileReader();rd.onload=()=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=1200;c.height=420;const scale=Math.max(c.width/im.width,c.height/im.height),w=im.width*scale,h=im.height*scale;c.getContext('2d').drawImage(im,(c.width-w)/2,(c.height-h)/2,w,h);profileBannerDraft=c.toDataURL('image/jpeg',.78);$('#profileCover').style.backgroundImage='linear-gradient(180deg,rgba(10,20,35,.08),rgba(10,20,35,.22)),url("'+profileBannerDraft+'")';sg.set('holpin_banner_'+uid,profileBannerDraft);toast('Banner actualizado en este dispositivo')};im.src=rd.result};rd.readAsDataURL(f)};
+$('#profileSave').onclick=async()=>{if(!need())return;const b=$('#profileSave');b.disabled=true;const current=meP()||{};const photo=profilePhotoDraft||current.photo||dflt;const r=await sb.from('profiles').upsert({id:uid,name:$('#profileNameInput').value.trim(),photo});if(r.error){toast('No se pudieron guardar los cambios: '+r.error.message);b.disabled=false;return}profilePhotoDraft='';profileBannerDraft='';toast('Perfil actualizado');await load();renderProfile()};
 $('#profileLogout').onclick=async()=>{try{const reg=await navigator.serviceWorker.getRegistration();const sub=reg&&await reg.pushManager.getSubscription();if(sub){await sb.from('push_subscriptions').delete().eq('endpoint',sub.endpoint);await sub.unsubscribe()}}catch(e){}pushOn=false;const r=await sb.auth.signOut();if(r.error){toast('No se pudo cerrar sesión: '+r.error.message);return}profilePhotoDraft='';show('buscar');toast('Sesión cerrada')};
 
 function ask(t){const w=who(t.driverId);
