@@ -179,6 +179,7 @@ b.bump{display:inline-block;animation:bump .5s ease}
 <div class="grid"><div><label>Desde</label><input id="pFrom" placeholder="Ciudad de salida"></div><div><label>Hasta</label><input id="pTo" placeholder="Ciudad de destino"></div>
 <div><label>Fecha</label><input id="pDate" type="date"></div><div><label>Horario de salida</label><input id="pTime" type="time"></div>
 <div><label>Monto por persona ($)</label><input id="pPrice" type="number" min="0" inputmode="numeric" placeholder="12000"></div><div><label>Asientos disponibles</label><input id="pSeats" type="number" min="1" max="8" inputmode="numeric" value="3"></div></div>
+<label style="margin-top:12px">Descripción del viaje</label><textarea id="pDescription" rows="3" maxlength="700" placeholder="Contá cómo será el viaje, si llevás equipaje, paradas u otros detalles..."></textarea>
 <div class="acts"><button class="btn" id="pub">Publicar viaje</button></div></div>
 <h2>Mis viajes</h2><div id="mine"></div></section>
 
@@ -210,7 +211,7 @@ function close(){$('#ov').hidden=true}
 $('#ov').onclick=e=>{if(e.target.id==='ov'&&!$('#ov').dataset.lock)close()};
 
 let sb=null;try{if(window.supabase&&/^https:\/\//.test(SUPABASE_URL)&&SUPABASE_ANON_KEY.length>20)sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:window.localStorage}})}catch(e){sb=null}
-let uid=null,ready=false,profilesLoaded=false,profs={},trips=[],msgs=[],role=sg.get('holpin_role','pasajero'),view='buscar';
+let uid=null,ready=false,profilesLoaded=false,profs={},trips=[],msgs=[],tripRequests=[],tripRatings=[],role=sg.get('holpin_role','pasajero'),view='buscar';
 const dflt=ini('?','#8e8e93');
 const who=id=>{const p=profs[id]||{};return{name:p.name||'Usuario',photo:/^data:image\//.test(p.photo||'')?p.photo:dflt}};
 const meP=()=>uid?profs[uid]:null;
@@ -221,26 +222,45 @@ const need=()=>{if(!uid){authSheet();return false}if(!profilesLoaded){toast('Est
 let loadSeq=0;
 async function load(){
  const my=++loadSeq;
- const [p,t,m]=await Promise.all([sb.from('profiles').select('id,name,photo'),sb.from('trips').select('*'),uid?sb.from('messages').select('*'):Promise.resolve({data:[]})]);
+ const [p,t,m,qr,rr]=await Promise.all([sb.from('profiles').select('id,name,photo'),sb.from('trips').select('*'),uid?sb.from('messages').select('*'):Promise.resolve({data:[]}),sb.from('trip_requests').select('*'),sb.from('trip_ratings').select('*')]);
  if(my!==loadSeq)return false;
  if(p.error){profilesLoaded=false;console.error('No se pudieron cargar los perfiles:',p.error);$('#list').innerHTML='<div class="empty">No se pudieron cargar los perfiles. Revisá tu conexión e intentá actualizar.</div>';return false}
  profs={};(p.data||[]).forEach(x=>profs[x.id]=x);profilesLoaded=true;
  if(t.error){console.error('No se pudieron cargar los viajes:',t.error);trips=[]}else
- trips=(t.data||[]).map(x=>({id:x.id,driverId:x.driver_id,from:x.origin,to:x.destination,when:x.departs_at,price:x.price,seats:x.seats,left:x.seats_left,soldOutAt:x.sold_out_at?new Date(x.sold_out_at).getTime():null}));
+ trips=(t.data||[]).map(x=>({id:x.id,driverId:x.driver_id,from:x.origin,to:x.destination,when:x.departs_at,price:x.price,seats:x.seats,left:x.seats_left,soldOutAt:x.sold_out_at?new Date(x.sold_out_at).getTime():null,description:x.description||'',completedAt:x.completed_at||null}));
+ tripRequests=qr.error?[]:(qr.data||[]).map(x=>({id:x.id,tripId:x.trip_id,passengerId:x.passenger_id,status:x.status}));
+ tripRatings=rr.error?[]:(rr.data||[]).map(x=>({id:x.id,tripId:x.trip_id,passengerId:x.passenger_id,driverId:x.driver_id,rating:x.rating}));
  msgs=(m.data||[]).map(x=>({id:x.id,tripId:x.trip_id,fromId:x.from_id,toId:x.to_id,text:x.body,route:x.route||'',ts:new Date(x.created_at).getTime(),read:x.read}));
  if(m.error&&!window._me){window._me=1;console.error(m.error);toast('No se pudieron cargar los mensajes: '+m.error.message)}
  ready=true;renderAll();return true}
 
 const seen=new Set(),lastLeft=new Map();
+function ratingSummary(driverId){
+ const a=tripRatings.filter(x=>x.driverId===driverId);
+ if(!a.length)return '<span class="meta">Sin calificaciones</span>';
+ const avg=a.reduce((s,x)=>s+x.rating,0)/a.length;
+ return '<span class="meta">★ '+avg.toFixed(1)+' · '+a.length+' '+(a.length===1?'valoración':'valoraciones')+'</span>';
+}
+function requestStatus(t){return tripRequests.find(x=>x.tripId===t.id&&x.passengerId===uid)}
 function card(t,i=0){
- const out=t.left<=0,own=t.driverId===uid,w=who(t.driverId);
- let a='';
- if(own)a=`<span class="meta">Asientos libres</span><button class="btn sec sm" data-a="dec" data-id="${esc(t.id)}">−</button><b class="${lastLeft.has(t.id)&&lastLeft.get(t.id)!==t.left?'bump':''}">${t.left}/${t.seats}</b><button class="btn sec sm" data-a="inc" data-id="${esc(t.id)}">+</button><button class="btn sec sm" data-a="del" data-id="${esc(t.id)}" style="margin-left:auto;color:var(--red)">Eliminar</button>`;
- else a=`<button class="btn sm" data-a="ask" data-id="${esc(t.id)}" ${out?'disabled':''}>¿Sigue disponible?</button>`;
- return `<article class="card${seen.has(t.id)?'':' new'}" style="--i:${Math.min(i,8)}"><div class="row"><img class="av" src="${esc(w.photo)}" alt=""><div class="g"><b>${esc(w.name)}</b><br><small>Conductor</small></div><span class="price">${money(t.price)}</span></div>
- <div class="route">${esc(t.from)}<i>→</i>${esc(t.to)}</div><div class="meta">Sale ${fmt(t.when)}</div>
- <div class="meta" style="margin-top:6px">${out?`<span class="badge">Agotado</span> ${t.soldOutAt?'Desaparece en '+left(t):''}`:`<span class="ok">${t.left} ${t.left===1?'asiento disponible':'asientos disponibles'}</span>`}</div>
- <div class="acts">${a}</div></article>`}
+ const out=t.left<=0,own=t.driverId===uid,w=who(t.driverId),mine=tripRequests.filter(x=>x.tripId===t.id);
+ const myReq=requestStatus(t);let a='';
+ if(own){
+  a='<span class="meta">Asientos libres</span><button class="btn sec sm" data-a="dec" data-id="'+esc(t.id)+'">−</button><b>'+t.left+'/'+t.seats+'</b><button class="btn sec sm" data-a="inc" data-id="'+esc(t.id)+'">+</button>'+
+  (t.completedAt?'<span class="badge" style="background:var(--green)">Finalizado</span>':'<button class="btn sm" data-a="finish" data-id="'+esc(t.id)+'">Finalizar viaje</button>')+
+  '<button class="btn sec sm" data-a="del" data-id="'+esc(t.id)+'" style="margin-left:auto;color:var(--red)">Eliminar</button>';
+ }else if(myReq){
+  a=myReq.status==='pending'?'<span class="badge">Postulación enviada</span>':myReq.status==='accepted'?'<span class="badge" style="background:var(--green)">Postulación aceptada</span>':'<span class="meta">Postulación no aceptada</span>';
+  if(myReq.status==='accepted'&&t.completedAt&&!tripRatings.some(x=>x.tripId===t.id&&x.passengerId===uid))a+='<button class="btn sm" data-a="rate" data-id="'+esc(t.id)+'">Calificar conductor</button>';
+  else if(myReq.status==='accepted'&&tripRatings.some(x=>x.tripId===t.id&&x.passengerId===uid))a+='<span class="meta">Ya calificaste este viaje</span>';
+ }else a='<button class="btn sm" data-a="apply" data-id="'+esc(t.id)+'" '+(out||t.completedAt?'disabled':'')+'>Postularme</button><button class="btn sec sm" data-a="ask" data-id="'+esc(t.id)+'">Consultar</button>';
+ const reqHtml=own&&mine.length?'<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)"><b>Postulaciones ('+mine.length+')</b>'+mine.map(r=>{const p=who(r.passengerId);return '<div class="row" style="margin-top:10px"><img class="av" src="'+esc(p.photo)+'" alt=""><div class="g"><b>'+esc(p.name)+'</b><br><small class="meta">'+(r.status==='pending'?'Pendiente':r.status==='accepted'?'Aceptada':'Rechazada')+'</small></div>'+(r.status==='pending'&&!t.completedAt?'<button class="btn sec sm" data-a="reject" data-rid="'+esc(r.id)+'">Rechazar</button><button class="btn sm" data-a="accept" data-rid="'+esc(r.id)+'" data-id="'+esc(t.id)+'" '+(out?'disabled':'')+'>Aceptar</button>':'')+'</div>'}).join('')+'</div>':'';
+ return '<article class="card'+(seen.has(t.id)?'':' new')+'" style="--i:'+Math.min(i,8)+'"><div class="row"><img class="av" src="'+esc(w.photo)+'" alt=""><div class="g"><b>'+esc(w.name)+'</b><br><small>Conductor · '+ratingSummary(t.driverId)+'</small></div><span class="price">'+money(t.price)+'</span></div>'+
+ '<div class="route">'+esc(t.from)+'<i>→</i>'+esc(t.to)+'</div><div class="meta">Sale '+fmt(t.when)+'</div>'+
+ (t.description?'<p style="margin:12px 0 0;line-height:1.45;white-space:pre-wrap">'+esc(t.description)+'</p>':'')+
+ '<div class="meta" style="margin-top:8px">'+(t.completedAt?'<span class="badge" style="background:var(--green)">Viaje finalizado</span>':out?'<span class="badge">Agotado</span>':'<span class="ok">'+t.left+' '+(t.left===1?'asiento disponible':'asientos disponibles')+'</span>')+'</div>'+
+ '<div class="acts">'+a+'</div>'+reqHtml+'</article>';
+}
 function renderList(){
  if(!ready)return;
  const f=nrm($('#qFrom').value),to=nrm($('#qTo').value),n=Date.now();
@@ -400,6 +420,10 @@ async function onAct(e){
  const b=e.target.closest('[data-a]');if(!b)return;const t=trips.find(x=>x.id===b.dataset.id);if(!t)return;
  const a=b.dataset.a;
  if(a==='ask')return need()&&ask(t);
+ if(a==='apply')return applyToTrip(t);
+ if(a==='rate')return rateTrip(t);
+ if(a==='accept'||a==='reject'){if(t.driverId!==uid)return;const req=tripRequests.find(x=>x.id===b.dataset.rid);if(!req)return;const status=a==='accept'?'accepted':'rejected';const up=await sb.from('trip_requests').update({status}).eq('id',req.id);if(up.error){toast('No se pudo actualizar: '+up.error.message);return}if(a==='accept'){const seat=await sb.from('trips').update({seats_left:Math.max(0,t.left-1)}).eq('id',t.id);if(seat.error){toast('No se pudo actualizar el cupo: '+seat.error.message);return}}toast(a==='accept'?'Pasajero aceptado':'Postulación rechazada');await load();return}
+ if(a==='finish'){if(t.driverId!==uid)return;const up=await sb.from('trips').update({completed_at:new Date().toISOString()}).eq('id',t.id);if(up.error){toast('No se pudo finalizar: '+up.error.message);return}toast('Viaje finalizado. Ya pueden calificarte.');await load();return}
  if(t.driverId!==uid)return;
  if(a==='del'&&!b.dataset.armed)return armDel(b,()=>{});
  let r;
@@ -409,16 +433,18 @@ async function onAct(e){
  if(r&&r.error)toast('No se pudo actualizar');load()}
 $('#list').onclick=onAct;$('#mine').onclick=onAct;
 
+async function applyToTrip(t){if(!need())return;if(t.driverId===uid)return toast('No podés postularte a tu propio viaje');if(t.left<=0)return toast('No quedan asientos disponibles');const r=await sb.from('trip_requests').insert({trip_id:t.id,passenger_id:uid,status:'pending'});if(r.error){toast(r.error.code==='23505'?'Ya te postulaste a este viaje':'No se pudo postular: '+r.error.message);return}toast('¡Postulación enviada!');await load()}
+async function rateTrip(t){const req=requestStatus(t);if(!req||req.status!=='accepted'||!t.completedAt)return toast('Solo podés calificar viajes finalizados en los que fuiste aceptado');let score=5;const labels=['','Muy malo','Malo','Bueno','Muy bueno','Excelente'];sheet('<h3>Calificá al conductor</h3><p>¿Cómo fue tu experiencia en este viaje?</p><div class="acts" id="stars" style="justify-content:center;gap:8px">'+[1,2,3,4,5].map(n=>'<button type="button" class="btn sec" data-star="'+n+'" style="font-size:25px;padding:8px 12px;color:#e5a000">★</button>').join('')+'</div><p id="ratingLabel" style="text-align:center;margin-top:10px">Excelente</p><div class="acts"><button class="btn" id="saveRating">Enviar calificación</button><button class="btn sec" id="cancelRating">Cancelar</button></div>');const draw=()=>{$('#stars').querySelectorAll('[data-star]').forEach(x=>x.style.opacity=+x.dataset.star<=score?'1':'.3');$('#ratingLabel').textContent=labels[score]};draw();$('#stars').onclick=e=>{const b=e.target.closest('[data-star]');if(b){score=+b.dataset.star;draw()}};$('#cancelRating').onclick=close;$('#saveRating').onclick=async()=>{const r=await sb.from('trip_ratings').insert({trip_id:t.id,passenger_id:uid,driver_id:t.driverId,rating:score});if(r.error){toast(r.error.code==='23505'?'Ya calificaste este viaje':'No se pudo guardar: '+r.error.message);return}close();toast('¡Gracias por calificar!');await load()}}
 $('#pub').onclick=async()=>{
  if(!need())return;
- const v=id=>$(id).value.trim(),from=v('#pFrom'),to=v('#pTo'),d=v('#pDate'),h=v('#pTime'),p=+v('#pPrice'),s=+v('#pSeats');
+ const v=id=>$(id).value.trim(),from=v('#pFrom'),to=v('#pTo'),d=v('#pDate'),h=v('#pTime'),p=+v('#pPrice'),s=+v('#pSeats'),description=v('#pDescription');
  if(!from||!to||!d||!h||!(s>0)||v('#pPrice')==='')return toast('Completá todos los campos');
  if(!(p>=0))return toast('El monto no puede ser negativo');
  if(!Number.isInteger(s)||s>8)return toast('Los asientos deben ser un número entre 1 y 8');
  if(new Date(d+'T'+h).getTime()<=Date.now())return toast('La salida tiene que ser en una fecha y hora futuras');
- const r=await sb.from('trips').insert({driver_id:uid,origin:from,destination:to,departs_at:new Date(d+'T'+h).toISOString(),price:p,seats:s,seats_left:s});
+ const r=await sb.from('trips').insert({driver_id:uid,origin:from,destination:to,departs_at:new Date(d+'T'+h).toISOString(),price:p,seats:s,seats_left:s,description});
  if(r.error)return toast('No se pudo publicar el viaje');
- ['#pFrom','#pTo','#pDate','#pTime','#pPrice'].forEach(i=>$(i).value='');toast('Viaje publicado');await load();show('buscar')};
+ ['#pFrom','#pTo','#pDate','#pTime','#pPrice','#pDescription'].forEach(i=>$(i).value='');toast('Viaje publicado');await load();show('buscar')};
 
 function boot(){
  if(!sb){$('#list').innerHTML='<div class="empty">Falta configurar Supabase: pegá tu URL y tu clave anon entre las comillas, al final del archivo, en el bloque «PASO 1».</div>';return}
