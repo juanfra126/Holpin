@@ -558,6 +558,15 @@ button,a,label{-webkit-tap-highlight-color:transparent;touch-action:manipulation
 #tabs button.on svg{filter:drop-shadow(0 2px 4px rgba(54,94,145,.24))}
 @media(max-width:700px){.nav{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;transform:none!important;filter:none!important;perspective:none!important;contain:none!important}#tabs .tab-lens{top:4px;bottom:4px;border-radius:19px}#tabs button.on{background:transparent!important;color:var(--tx)!important}}
 @media(prefers-reduced-motion:reduce){#tabs button.on svg{animation:none!important}}
+
+/* Mobile premium tab transitions */
+@media(max-width:700px){
+ section.nav-enter-forward{animation:navSlideForward .46s cubic-bezier(.22,.8,.25,1) both!important}
+ section.nav-enter-back{animation:navSlideBack .46s cubic-bezier(.22,.8,.25,1) both!important}
+ #tabs button{transition:color .22s ease,opacity .22s ease}
+ #tabs button:active{transform:scale(.94)}
+ #tabs button.on svg{animation:tabIconLand .5s cubic-bezier(.18,.9,.25,1.2) both}
+}
 </style></head><body>
 <header class="nav"><div class="brand"><span class="lg"><img class="lg-l" src="logo-negro.png" alt="" width="64" height="64"><img class="lg-d" src="logo-blanco.png" alt="" width="64" height="64"></span><b>Holpin</b></div><nav id="tabs"></nav><button class="btn sec sm" id="bell" title="Activar avisos de mensajes nuevos" aria-label="Activar avisos" hidden>🔔</button><button class="avbtn" id="meBtn" aria-label="Perfil"></button></header>
 <main>
@@ -1095,12 +1104,3 @@ addEventListener('load',movePill);addEventListener('resize',movePill);addEventLi
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)renderMsgs()});
 setRole(role);boot();
 </script></body></html>
-
-/* Mobile premium tab transitions */
-@media(max-width:700px){
- section.nav-enter-forward{animation:navSlideForward .46s cubic-bezier(.22,.8,.25,1) both!important}
- section.nav-enter-back{animation:navSlideBack .46s cubic-bezier(.22,.8,.25,1) both!important}
- #tabs button{transition:color .22s ease,opacity .22s ease}
- #tabs button:active{transform:scale(.94)}
- #tabs button.on svg{animation:tabIconLand .5s cubic-bezier(.18,.9,.25,1.2) both}
-}
