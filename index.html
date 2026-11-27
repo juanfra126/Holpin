@@ -172,7 +172,7 @@ b.bump{display:inline-block;animation:bump .5s ease}
 
 <section id="v-buscar">
 <div class="panel"><div class="grid"><div><label>Salgo desde</label><input id="qFrom" placeholder="Ciudad de salida"></div><div><label>Quiero ir a</label><input id="qTo" placeholder="Ciudad de destino"></div></div></div>
-<div id="list"></div></section>
+<div id="list"></div><h2>Mis postulaciones</h2><div id="myApplications"></div></section>
 
 <section id="v-publicar" hidden>
 <div class="panel"><h3 style="margin:0 0 14px;font-size:22px">Publicar un viaje</h3>
@@ -267,7 +267,10 @@ function renderList(){
  const r=live().filter(t=>new Date(t.when).getTime()>n&&nrm(t.from).includes(f)&&nrm(t.to).includes(to)).sort((a,b)=>a.when<b.when?-1:1);
  $('#list').innerHTML=r.length?r.map(card).join(''):'<div class="empty">No hay viajes para esa búsqueda.</div>';
  const m=live().filter(t=>t.driverId===uid);
- $('#mine').innerHTML=m.length?m.map(card).join(''):'<div class="empty">Todavía no publicaste viajes.</div>';r.concat(m).forEach(x=>{seen.add(x.id);lastLeft.set(x.id,x.left)})}
+ $('#mine').innerHTML=m.length?m.map(card).join(''):'<div class="empty">Todavía no publicaste viajes.</div>';
+ const applied=tripRequests.filter(x=>x.passengerId===uid).map(x=>trips.find(t=>t.id===x.tripId)).filter(Boolean).sort((a,b)=>new Date(b.when)-new Date(a.when));
+ $('#myApplications').innerHTML=applied.length?applied.map(card).join(''):'<div class="empty">Todavía no te postulaste a ningún viaje.</div>';
+ r.concat(m,applied).forEach(x=>{seen.add(x.id);lastLeft.set(x.id,x.left)})}
 let chat=null,marking=false;const readTried=new Set();
 const other=m=>m.fromId===uid?m.toId:m.fromId;
 const ckey=m=>other(m)+'|'+(m.tripId||m.route);
