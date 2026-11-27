@@ -399,7 +399,7 @@ function notify(m){
   pushNote(o.name,m.body,o.photo);
  }
 }
-const VAPID_PUBLIC='BAcF6yvUJWDuukXhThyw4SjPrCPJAFq0NclE6ciivyOwLiPz9sjqopDuuRJKMQtuDigaVQJV8SYBwS4jXTWFlZc';
+const VAPID_PUBLIC='BCYRJr1XqASkhzc56HlDQ2JRvc946dPcK8H5469mRi7ji0YrVI6U3xmz4UtG-syXCac_T4NbWNGCFkRRrWnWMOU';
 let pushOn=false;
 const u8=b=>{const s=atob((b+'='.repeat((4-b.length%4)%4)).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from([...s].map(c=>c.charCodeAt(0)))};
 async function syncPush(ask){
