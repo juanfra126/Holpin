@@ -51,8 +51,7 @@ Deno.serve(async (req) => {
   const notification = JSON.stringify({
     title,
     body,
-    icon: new URL("/icon-192.png.jpeg", supabaseUrl).href,
-    url: "/?view=mensajes",
+    url: "/",
     tag: "holpin-message-" + String(message.from_id || "chat"),
   });
 
