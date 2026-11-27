@@ -90,19 +90,39 @@ input:focus,textarea:focus{box-shadow:0 0 0 4px rgba(0,113,227,.18)}
 .av{transition:transform .25s}
 .card:hover .av{transform:scale(1.08)}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+/* ---- Animaciones extra ---- */
+@keyframes grad{to{background-position:100% 0}}
+@keyframes shim{to{background-position:-200% 0}}
+@keyframes bump{50%{transform:scale(1.5);color:var(--blue)}}
+@keyframes nudge{50%{transform:translateX(5px)}}
+@keyframes sway{to{transform:translate(-30px,20px) scale(1.15)}}
+.hero h1{background:linear-gradient(90deg,var(--tx) 0%,var(--blue) 35%,#af52de 65%,var(--tx) 100%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:up .8s cubic-bezier(.2,.8,.2,1) both,grad 9s ease-in-out infinite alternate}
+.hero::after{content:"";position:absolute;inset:0 auto auto 58%;width:240px;height:200px;background:radial-gradient(closest-side,rgba(175,82,222,.18),transparent);filter:blur(30px);z-index:-1;pointer-events:none;animation:sway 9s ease-in-out infinite alternate}
+.seg{position:relative}
+.seg .pill{position:absolute;top:3px;bottom:3px;left:0;width:0;background:var(--card);border-radius:980px;box-shadow:0 1px 4px rgba(0,0,0,.18);transition:transform .4s cubic-bezier(.3,.9,.3,1.1),width .4s cubic-bezier(.3,.9,.3,1.1)}
+.seg button{position:relative;z-index:1}
+.seg button.on{background:none;box-shadow:none}
+.route i{animation:nudge 2.6s ease-in-out infinite}
+b.bump{display:inline-block;animation:bump .5s ease}
+.sk{height:150px;border-radius:22px;margin-bottom:12px;background:linear-gradient(90deg,var(--fill) 25%,var(--line) 50%,var(--fill) 75%);background-size:200% 100%;animation:shim 1.3s linear infinite}
+.sug{position:absolute;z-index:20;background:var(--card);border-radius:14px;box-shadow:0 10px 30px rgba(0,0,0,.2);padding:6px;max-height:250px;overflow:auto;animation:pop .22s both}
+.sug div{padding:9px 12px;border-radius:9px;cursor:pointer;font-size:15px;transition:background .15s}
+.sug div:hover{background:var(--fill)}
+.panel{transition:box-shadow .3s}
+.panel:focus-within{box-shadow:0 8px 28px rgba(0,113,227,.14)}
 </style></head><body>
 <header class="nav"><b>Holpin</b><nav id="tabs"></nav><button class="avbtn" id="meBtn" aria-label="Perfil"></button></header>
 <main>
 <section class="hero"><h1>Viajá acompañado.</h1><p>Encontrá un lugar en un auto o publicá tu viaje entre ciudades y repartí los gastos.</p>
-<div class="seg" id="roleSeg"><button data-r="pasajero">Soy pasajero</button><button data-r="conductor">Soy conductor</button></div></section>
+<div class="seg" id="roleSeg"><span class="pill"></span><button data-r="pasajero">Soy pasajero</button><button data-r="conductor">Soy conductor</button></div></section>
 
 <section id="v-buscar">
-<div class="panel"><div class="grid"><div><label>Salgo desde</label><input id="qFrom" list="cities" placeholder="Ciudad de salida"></div><div><label>Quiero ir a</label><input id="qTo" list="cities" placeholder="Ciudad de destino"></div></div></div>
+<div class="panel"><div class="grid"><div><label>Salgo desde</label><input id="qFrom" placeholder="Ciudad de salida"></div><div><label>Quiero ir a</label><input id="qTo" placeholder="Ciudad de destino"></div></div></div>
 <div id="list"></div></section>
 
 <section id="v-publicar" hidden>
 <div class="panel"><h3 style="margin:0 0 14px;font-size:22px">Publicar un viaje</h3>
-<div class="grid"><div><label>Desde</label><input id="pFrom" list="cities" placeholder="Ciudad de salida"></div><div><label>Hasta</label><input id="pTo" list="cities" placeholder="Ciudad de destino"></div>
+<div class="grid"><div><label>Desde</label><input id="pFrom" placeholder="Ciudad de salida"></div><div><label>Hasta</label><input id="pTo" placeholder="Ciudad de destino"></div>
 <div><label>Fecha</label><input id="pDate" type="date"></div><div><label>Horario de salida</label><input id="pTime" type="time"></div>
 <div><label>Monto por persona ($)</label><input id="pPrice" type="number" min="0" inputmode="numeric" placeholder="12000"></div><div><label>Asientos disponibles</label><input id="pSeats" type="number" min="1" max="8" inputmode="numeric" value="3"></div></div>
 <div class="acts"><button class="btn" id="pub">Publicar viaje</button></div></div>
@@ -111,7 +131,7 @@ input:focus,textarea:focus{box-shadow:0 0 0 4px rgba(0,113,227,.18)}
 <section id="v-mensajes" hidden><h2 style="margin-top:0">Mensajes</h2><div class="panel" id="msgs"></div></section>
 </main>
 <datalist id="cities"><option>Buenos Aires</option><option>Córdoba</option><option>Rosario</option><option>Mendoza</option><option>La Plata</option><option>Mar del Plata</option><option>Tucumán</option><option>Salta</option><option>Santa Fe</option><option>Neuquén</option><option>Bariloche</option><option>Paraná</option><option>Posadas</option><option>Corrientes</option><option>San Luis</option><option>Bahía Blanca</option></datalist>
-<div class="ov" id="ov" hidden><div class="sheet" id="sheet"></div></div><div id="toast"></div>
+<div class="ov" id="ov" hidden><div class="sheet" id="sheet"></div></div><div class="sug" id="sug" hidden></div><div id="toast"></div>
 <!-- PASO 1: pegá tus datos de Supabase ENTRE LAS COMILLAS (sin borrar las comillas) -->
 <script>
 window.HOLPIN_URL="https://ufymsapavinnuulnpftq.supabase.co";
@@ -129,7 +149,7 @@ const ini=(n,c)=>'data:image/svg+xml;utf8,'+encodeURIComponent(`<svg xmlns="http
 const fmt=w=>new Date(w).toLocaleString('es-AR',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
 const money=n=>'$ '+Number(n).toLocaleString('es-AR');
 const sg={get(k,d){try{return localStorage.getItem(k)||d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
-function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),2800)}
+function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');setTimeout(()=>e.classList.remove('on'),t.length>60?6500:2800)}
 function sheet(h,lock){$('#sheet').innerHTML=h;$('#ov').hidden=false;$('#ov').dataset.lock=lock?1:''}
 function close(){$('#ov').hidden=true}
 $('#ov').onclick=e=>{if(e.target.id==='ov'&&!$('#ov').dataset.lock)close()};
@@ -151,11 +171,11 @@ async function load(){
  msgs=(m.data||[]).map(x=>({id:x.id,fromId:x.from_id,toId:x.to_id,text:x.body,route:x.route||'',ts:new Date(x.created_at).getTime(),read:x.read}));
  ready=true;renderAll()}
 
-const seen=new Set();
+const seen=new Set(),lastLeft=new Map();
 function card(t,i=0){
  const out=t.left<=0,own=t.driverId===uid,w=who(t.driverId);
  let a='';
- if(own)a=`<span class="meta">Asientos libres</span><button class="btn sec sm" data-a="dec" data-id="${esc(t.id)}">−</button><b>${t.left}/${t.seats}</b><button class="btn sec sm" data-a="inc" data-id="${esc(t.id)}">+</button><button class="btn sec sm" data-a="del" data-id="${esc(t.id)}" style="margin-left:auto;color:var(--red)">Eliminar</button>`;
+ if(own)a=`<span class="meta">Asientos libres</span><button class="btn sec sm" data-a="dec" data-id="${esc(t.id)}">−</button><b class="${lastLeft.has(t.id)&&lastLeft.get(t.id)!==t.left?'bump':''}">${t.left}/${t.seats}</b><button class="btn sec sm" data-a="inc" data-id="${esc(t.id)}">+</button><button class="btn sec sm" data-a="del" data-id="${esc(t.id)}" style="margin-left:auto;color:var(--red)">Eliminar</button>`;
  else a=`<button class="btn sm" data-a="ask" data-id="${esc(t.id)}" ${out?'disabled':''}>¿Sigue disponible?</button>`;
  return `<article class="card${seen.has(t.id)?'':' new'}" style="--i:${Math.min(i,8)}"><div class="row"><img class="av" src="${esc(w.photo)}" alt=""><div class="g"><b>${esc(w.name)}</b><br><small>Conductor</small></div><span class="price">${money(t.price)}</span></div>
  <div class="route">${esc(t.from)}<i>→</i>${esc(t.to)}</div><div class="meta">Sale ${fmt(t.when)}</div>
@@ -167,7 +187,7 @@ function renderList(){
  const r=live().filter(t=>new Date(t.when).getTime()>n&&nrm(t.from).includes(f)&&nrm(t.to).includes(to)).sort((a,b)=>a.when<b.when?-1:1);
  $('#list').innerHTML=r.length?r.map(card).join(''):'<div class="empty">No hay viajes para esa búsqueda.</div>';
  const m=live().filter(t=>t.driverId===uid);
- $('#mine').innerHTML=m.length?m.map(card).join(''):'<div class="empty">Todavía no publicaste viajes.</div>';r.concat(m).forEach(x=>seen.add(x.id))}
+ $('#mine').innerHTML=m.length?m.map(card).join(''):'<div class="empty">Todavía no publicaste viajes.</div>';r.concat(m).forEach(x=>{seen.add(x.id);lastLeft.set(x.id,x.left)})}
 function renderMsgs(){
  const mine=msgs.sort((a,b)=>b.ts-a.ts);
  $('#msgs').innerHTML=!uid?'<div class="empty">Iniciá sesión para ver tus mensajes.</div>':mine.length?mine.map(m=>{const rx=m.toId===uid,o=who(rx?m.fromId:m.toId);return `<div class="msg"><img class="av" src="${esc(o.photo)}" alt=""><div><b>${esc(rx?o.name:'Para '+o.name)}</b> <small class="meta">· ${esc(m.route)} · ${rx?'recibido':'enviado'}</small><div>${esc(m.text)}</div></div></div>`}).join(''):'<div class="empty">No tenés mensajes.</div>';
@@ -178,7 +198,7 @@ function renderTabs(){
  $('#tabs').innerHTML=tabs.map(([k,l])=>`<button data-v="${k}" class="${view===k?'on':''}">${l}${k==='mensajes'&&un?`<span class="dot">${un}</span>`:''}</button>`).join('');
  $('#meBtn').innerHTML=meP()?`<img class="av" src="${esc(who(uid).photo)}" alt="">`:'<span class="btn sec sm">Entrar</span>'}
 const renderAll=()=>{renderList();renderMsgs()};
-function show(v){view=v;$('#roleSeg').hidden=v==='publicar';['buscar','publicar','mensajes'].forEach(k=>$('#v-'+k).hidden=k!==v);
+function show(v){view=v;$('#roleSeg').hidden=v!=='buscar';setTimeout(movePill,0);['buscar','publicar','mensajes'].forEach(k=>$('#v-'+k).hidden=k!==v);
  if(v==='mensajes'&&uid&&msgs.some(m=>m.toId===uid&&!m.read))sb.from('messages').update({read:true}).eq('to_id',uid).eq('read',false).then(()=>load());
  renderAll()}
 function setRole(r){role=r;sg.set('holpin_role',r);if(r!=='conductor'&&view==='publicar')view='buscar';
@@ -193,7 +213,7 @@ function authSheet(){
  <div class="acts"><button class="btn" id="aIn">Iniciar sesión</button><button class="btn sec" id="aUp">Crear cuenta</button><button class="btn sec" id="aX">Cerrar</button></div>`);
  const go=async up=>{const email=$('#aE').value.trim(),password=$('#aP').value;
   if(!email||password.length<6)return toast('Ingresá un email y una contraseña de 6 o más caracteres');
-  const r=up?await sb.auth.signUp({email,password}):await sb.auth.signInWithPassword({email,password});
+  const r=up?await sb.auth.signUp({email,password,options:{emailRedirectTo:location.origin}}):await sb.auth.signInWithPassword({email,password});
   if(r.error)return toast(r.error.message==='Invalid login credentials'?'Email o contraseña incorrectos':r.error.message);
   if(up&&!r.data.session)toast('Revisá tu email para confirmar la cuenta')};
  $('#aIn').onclick=()=>go(false);$('#aUp').onclick=()=>go(true);$('#aX').onclick=close}
@@ -248,11 +268,36 @@ $('#pub').onclick=async()=>{
 
 function boot(){
  if(!sb){$('#list').innerHTML='<div class="empty">Falta configurar Supabase: pegá tu URL y tu clave anon entre las comillas, al final del archivo, en el bloque «PASO 1».</div>';return}
- $('#list').innerHTML='<div class="empty">Cargando…</div>';
+ $('#list').innerHTML='<div class="sk"></div><div class="sk"></div><div class="sk"></div>';
+ {const q=new URLSearchParams(location.hash.slice(1));
+  if(q.get('error_code')||q.get('error_description')){
+   const msg=q.get('error_code')==='otp_expired'?'El enlace de confirmación venció o ya se usó. Si ya confirmaste tu cuenta, iniciá sesión.':(q.get('error_description')||'No se pudo confirmar la cuenta');
+   history.replaceState(null,'',location.pathname+location.search);
+   setTimeout(()=>{toast(msg);authSheet()},700)}
+  else if(q.get('type')==='signup'){
+   setTimeout(()=>toast('¡Cuenta confirmada!'),700);
+   setTimeout(()=>{if(!uid){toast('Tu cuenta está lista. Iniciá sesión para continuar.');authSheet()}},3000)}}
  sb.auth.onAuthStateChange((ev,s)=>{uid=s&&s.user?s.user.id:null;
   setTimeout(async()=>{await load();
    if(uid){if(!$('#ov').hidden&&$('#sheet').querySelector('#aE'))close();if(!meP()&&$('#ov').hidden)profile(true)}},0)});
  sb.channel('holpin').on('postgres_changes',{event:'*',schema:'public'},()=>load()).subscribe();
  setInterval(()=>{renderList();if(uid)sb.from('trips').delete().eq('driver_id',uid).lt('sold_out_at',new Date(Date.now()-H3).toISOString()).then(()=>{})},30000)}
+const CITIES=['Buenos Aires','Córdoba','Rosario','Mendoza','La Plata','Mar del Plata','Tucumán','Salta','Santa Fe','Neuquén','Bariloche','Paraná','Posadas','Corrientes','San Luis','Bahía Blanca'];
+let sugEl=null;
+function sugShow(inp){
+ const q=nrm(inp.value),s=new Set(CITIES);trips.forEach(t=>{s.add(t.from);s.add(t.to)});
+ const r=[...s].filter(c=>nrm(c).includes(q)&&nrm(c)!==q).sort().slice(0,8),b=$('#sug');
+ if(!r.length){b.hidden=true;return}
+ const rc=inp.getBoundingClientRect();
+ b.style.left=(rc.left+scrollX)+'px';b.style.top=(rc.bottom+scrollY+6)+'px';b.style.minWidth=rc.width+'px';
+ b.innerHTML=r.map(c=>`<div>${esc(c)}</div>`).join('');b.hidden=false;sugEl=inp}
+document.querySelectorAll('#qFrom,#qTo,#pFrom,#pTo').forEach(i=>{i.setAttribute('autocomplete','off');
+ i.addEventListener('input',()=>sugShow(i));i.addEventListener('focus',()=>sugShow(i));
+ i.addEventListener('blur',()=>setTimeout(()=>{$('#sug').hidden=true},150))});
+$('#sug').addEventListener('mousedown',e=>{e.preventDefault();const d=e.target.closest('div');if(!d||!sugEl)return;
+ sugEl.value=d.textContent;sugEl.dispatchEvent(new Event('input'));$('#sug').hidden=true});
+function movePill(){const b=document.querySelector('#roleSeg button.on'),p=document.querySelector('#roleSeg .pill');
+ if(!b||!p||!b.offsetWidth)return;p.style.width=b.offsetWidth+'px';p.style.transform='translateX('+b.offsetLeft+'px)'}
+addEventListener('load',movePill);addEventListener('resize',movePill);
 setRole(role);boot();
 </script></body></html>
