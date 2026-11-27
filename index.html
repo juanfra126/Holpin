@@ -2,6 +2,7 @@
 <html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#0071e3"><link rel="apple-touch-icon" href="icon-192.png">
 <title>Holpin — Coordiná tus viajes</title>
 <style>
 :root{--bg:#fbfbfd;--card:#fff;--tx:#1d1d1f;--tx2:#6e6e73;--line:#d2d2d7;--blue:#0071e3;--red:#ff3b30;--green:#1d9b4a;--glass:rgba(251,251,253,.8);--fill:#f5f5f7;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -172,7 +173,7 @@ b.bump{display:inline-block;animation:bump .5s ease}
 <h2>Mis viajes</h2><div id="mine"></div></section>
 
 <section id="v-mensajes" hidden><h2 style="margin-top:0">Mensajes</h2><div class="panel" id="msgs"></div></section>
-<div class="meta" style="text-align:center;padding:0 0 28px;font-size:12px">Holpin · versión chat 5</div>
+<div class="meta" style="text-align:center;padding:0 0 28px;font-size:12px">Holpin · versión chat 6</div>
 </main>
 <datalist id="cities"><option>Buenos Aires</option><option>Córdoba</option><option>Rosario</option><option>Mendoza</option><option>La Plata</option><option>Mar del Plata</option><option>Tucumán</option><option>Salta</option><option>Santa Fe</option><option>Neuquén</option><option>Bariloche</option><option>Paraná</option><option>Posadas</option><option>Corrientes</option><option>San Luis</option><option>Bahía Blanca</option></datalist>
 <div class="ov" id="ov" hidden><div class="sheet" id="sheet"></div></div><div class="sug" id="sug" hidden></div><div id="toast"></div>
@@ -307,15 +308,33 @@ function notify(m){
  const o=who(m.from_id),inChat=chat&&chat.other===m.from_id&&view==='mensajes'&&!document.hidden;
  if(inChat)return;
  beep();try{navigator.vibrate&&navigator.vibrate([120,60,120])}catch(e){}
- if(document.hidden&&'Notification' in window&&Notification.permission==='granted')pushNote(o.name,m.body,o.photo);
+ if(document.hidden){if(!pushOn&&'Notification' in window&&Notification.permission==='granted')pushNote(o.name,m.body,o.photo)}
  else toast('Nuevo mensaje de '+o.name)}
+const VAPID_PUBLIC='BAcF6yvUJWDuukXhThyw4SjPrCPJAFq0NclE6ciivyOwLiPz9sjqopDuuRJKMQtuDigaVQJV8SYBwS4jXTWFlZc';
+let pushOn=false;
+const u8=b=>{const s=atob((b+'='.repeat((4-b.length%4)%4)).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from([...s].map(c=>c.charCodeAt(0)))};
+async function syncPush(ask){
+ try{
+  if(!uid||!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window))return false;
+  if(Notification.permission==='default'&&ask)await Notification.requestPermission();
+  if(Notification.permission!=='granted')return false;
+  const reg=await Promise.race([navigator.serviceWorker.ready,new Promise((_,j)=>setTimeout(()=>j(new Error('no se encontró sw.js')),5000))]);
+  let s=await reg.pushManager.getSubscription();
+  if(!s)s=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:u8(VAPID_PUBLIC)});
+  const j=s.toJSON();
+  const r=await sb.from('push_subscriptions').upsert({endpoint:j.endpoint,user_id:uid,sub:j},{onConflict:'endpoint'});
+  if(r.error){console.error(r.error);toast('No se pudo activar el aviso: '+r.error.message);return false}
+  pushOn=true;renderTabs();return true
+ }catch(e){console.error(e);toast('No se pudieron activar los avisos: '+e.message);return false}}
 $('#bell').onclick=async()=>{
- try{const p=await Notification.requestPermission();toast(p==='granted'?'Avisos activados':'Avisos bloqueados. Habilitalos desde el candado del navegador.')}catch(e){}
+ const ok=await syncPush(true);
+ if(ok)toast('Avisos activados');
+ else if('Notification' in window&&Notification.permission==='denied')toast('Avisos bloqueados. Habilitalos desde el candado del navegador.');
  renderTabs()};
 function renderTabs(){
  const un=msgs.filter(m=>m.toId===uid&&!m.read).length;
  document.title=(un?'('+un+') ':'')+'Holpin — Coordiná tus viajes';
- $('#bell').hidden=!(uid&&'Notification' in window&&Notification.permission==='default');
+ $('#bell').hidden=!(uid&&'Notification' in window&&Notification.permission!=='denied'&&!pushOn);
  const tabs=[['buscar','Viajes']].concat(role==='conductor'?[['publicar','Publicar']]:[],[['mensajes','Mensajes']]);
  $('#tabs').innerHTML=tabs.map(([k,l])=>`<button data-v="${k}" class="${view===k?'on':''}">${l}${k==='mensajes'&&un?`<span class="dot">${un}</span>`:''}</button>`).join('');
  $('#meBtn').innerHTML=meP()?`<img class="av" src="${esc(who(uid).photo)}" alt="">`:'<span class="btn sec sm">Entrar</span>'}
@@ -348,7 +367,7 @@ function profile(first){
  const chk=()=>$('#pSave').disabled=!($('#pName').value.trim()&&photo);
  $('#pName').oninput=chk;chk();
  if(!first)$('#pCancel').onclick=close;
- $('#pOut').onclick=async()=>{await sb.auth.signOut();close()};
+ $('#pOut').onclick=async()=>{try{const reg=await navigator.serviceWorker.getRegistration();const s=reg&&await reg.pushManager.getSubscription();if(s){await sb.from('push_subscriptions').delete().eq('endpoint',s.endpoint);await s.unsubscribe()}}catch(e){}pushOn=false;await sb.auth.signOut();close()};
  $('#pFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const im=new Image();im.onload=()=>{const c=document.createElement('canvas');c.width=c.height=160;const s=Math.min(im.width,im.height);c.getContext('2d').drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,160,160);photo=c.toDataURL('image/jpeg',.8);$('#pPrev').src=photo;chk()};im.src=r.result};r.readAsDataURL(f)};
  $('#pSave').onclick=async()=>{const b=$('#pSave');b.disabled=true;
   const r=await sb.from('profiles').upsert({id:uid,name:$('#pName').value.trim(),photo});
@@ -394,12 +413,12 @@ function boot(){
    setTimeout(()=>{if(!uid){toast('Tu cuenta está lista. Iniciá sesión para continuar.');authSheet()}},3000)}}
  sb.auth.onAuthStateChange((ev,s)=>{uid=s&&s.user?s.user.id:null;
   setTimeout(async()=>{await load();
-   if(uid){if(!$('#ov').hidden&&$('#sheet').querySelector('#aE'))close();if(!meP()&&$('#ov').hidden)profile(true)}},0)});
+   if(uid){syncPush(false);if(!$('#ov').hidden&&$('#sheet').querySelector('#aE'))close();if(!meP()&&$('#ov').hidden)profile(true)}},0)});
  sb.channel('holpin').on('postgres_changes',{event:'*',schema:'public'},p=>{
   if(p.table==='messages'&&p.eventType==='INSERT'&&p.new&&uid&&p.new.to_id===uid)notify(p.new);
   load()}).subscribe();
  setInterval(()=>{renderList();if(uid)sb.from('trips').delete().eq('driver_id',uid).lt('sold_out_at',new Date(Date.now()-H3).toISOString()).then(()=>{})},30000)}
-const CITIES=[];
+const CITIES=['Buenos Aires','Córdoba','Rosario','Mendoza','La Plata','Mar del Plata','Tucumán','Salta','Santa Fe','Neuquén','Bariloche','Paraná','Posadas','Corrientes','San Luis','Bahía Blanca'];
 let sugEl=null;
 function sugShow(inp){
  const q=nrm(inp.value),s=new Set(CITIES);trips.forEach(t=>{s.add(t.from);s.add(t.to)});
