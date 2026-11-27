@@ -848,6 +848,7 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 const nrm=s=>s.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().trim();
 const ini=(n,c)=>'data:image/svg+xml;utf8,'+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><rect width="80" height="80" fill="${c}"/><text x="40" y="53" font-size="36" font-family="Arial" fill="#fff" text-anchor="middle">${n[0]}</text></svg>`);
 const fmt=w=>new Date(w).toLocaleString('es-AR',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+const localDateKey=w=>{const d=new Date(w);return [d.getFullYear(),String(d.getMonth()+1).padStart(2,'0'),String(d.getDate()).padStart(2,'0')].join('-')};
 const money=n=>'$ '+Number(n).toLocaleString('es-AR');
 const sg={get(k,d){try{return localStorage.getItem(k)||d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),t.length>60?6500:2800)}
@@ -1025,7 +1026,7 @@ function card(t,i=0){
 function renderList(){
  if(!ready)return;
  const f=nrm($('#qFrom').value),to=nrm($('#qTo').value),day=$('#qDate').value,n=Date.now();
- const r=live().filter(t=>new Date(t.when).getTime()>n&&nrm(t.from).includes(f)&&nrm(t.to).includes(to)&&(!day||new Date(t.when).toLocaleDateString('en-CA')===day)).sort((a,b)=>a.when<b.when?-1:1);
+ const r=live().filter(t=>new Date(t.when).getTime()>n&&nrm(t.from).includes(f)&&nrm(t.to).includes(to)&&(!day||localDateKey(t.when)===day)).sort((a,b)=>a.when<b.when?-1:1);
  $('#list').innerHTML=r.length?r.map(card).join(''):'<div class="empty">No hay viajes para esa búsqueda.</div>';
  const m=live().filter(t=>t.driverId===uid);
  $('#mine').innerHTML=m.length?m.map(card).join(''):'<div class="empty">Todavía no publicaste viajes.</div>';
@@ -1441,6 +1442,7 @@ $('#pub').onclick=async()=>{
  if(!need())return;
  const v=id=>$(id).value.trim(),from=v('#pFrom'),to=v('#pTo'),d=v('#pDate'),h=v('#pTime'),p=+v('#pPrice'),s=+v('#pSeats'),description=v('#pDescription');
  if(!from||!to||!d||!h||!(s>0)||v('#pPrice')==='')return toast('Completá todos los campos');
+  if(nrm(from)===nrm(to))return toast('El origen y el destino tienen que ser distintos');
  if(!(p>=0))return toast('El monto no puede ser negativo');
  if(!Number.isInteger(s)||s>8)return toast('Los asientos deben ser un número entre 1 y 8');
  if(new Date(d+'T'+h).getTime()<=Date.now())return toast('La salida tiene que ser en una fecha y hora futuras');
@@ -1465,7 +1467,7 @@ function boot(){
  sb.channel('holpin').on('postgres_changes',{event:'*',schema:'public'},p=>{
   if(p.table==='messages'&&p.eventType==='INSERT'&&p.new&&uid&&p.new.to_id===uid)notify(p.new);
   load()}).subscribe();
- setInterval(()=>{renderList();if(uid){sb.from('trips').delete().eq('driver_id',uid).lt('sold_out_at',new Date(Date.now()-H3).toISOString()).then(()=>{});if(document.hidden)load()}},15000)}
+ setInterval(()=>{renderList();if(uid&&document.hidden)load()},15000)}
 const CITIES=['Buenos Aires','Córdoba','Rosario','Mendoza','La Plata','Mar del Plata','Tucumán','Salta','Santa Fe','Neuquén','Bariloche','Paraná','Posadas','Corrientes','San Luis','Bahía Blanca'];
 let sugEl=null;
 function sugShow(inp){
