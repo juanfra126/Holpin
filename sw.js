@@ -15,9 +15,10 @@ self.addEventListener('push',e=>{
 });
 self.addEventListener('notificationclick',e=>{
   e.notification.close();
-  e.waitUntil(self.clients.matchAll({type:'window',includeUncontrolled:true}).then(list=>{
-    for(const c of list){if('focus' in c)return c.focus()}
-    return self.clients.openWindow('./');
+  const target=e.notification.data&&e.notification.data.url?e.notification.data.url:'./';
+  e.waitUntil(self.clients.matchAll({type:'window',includeUncontrolled:true}).then(async list=>{
+    for(const c of list){if('focus' in c){await c.focus();if('navigate' in c)await c.navigate(target);return;}}
+    return self.clients.openWindow(target);
   }));
 });
 
