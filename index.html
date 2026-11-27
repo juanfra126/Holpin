@@ -110,10 +110,23 @@ b.bump{display:inline-block;animation:bump .5s ease}
 .sug div:hover{background:var(--fill)}
 .panel{transition:box-shadow .3s}
 .panel:focus-within{box-shadow:0 8px 28px rgba(0,113,227,.14)}
+/* ---- Chat ---- */
+.conv{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.conv:last-child{border:0}
+.conv .g{flex:1;min-width:0}
+.chath{display:flex;align-items:center;gap:12px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+.chath .g{flex:1;min-width:0}
+.chath .av{width:36px;height:36px}
+#cLog{min-height:180px;max-height:50vh;overflow-y:auto;padding:14px 0;display:flex;flex-direction:column;gap:6px}
+.bub{max-width:78%;padding:9px 14px;border-radius:18px;font-size:15px;line-height:1.35;word-wrap:break-word;white-space:pre-wrap}
+.bub.me{align-self:flex-end;background:var(--blue);color:#fff;border-bottom-right-radius:6px}
+.bub.th{align-self:flex-start;background:var(--fill);border-bottom-left-radius:6px}
+.bub time{display:block;font-size:11px;opacity:.7;margin-top:2px}
+.cform{display:flex;gap:8px;padding-top:12px;border-top:1px solid var(--line)}
 </style></head><body>
 <header class="nav"><b>Holpin</b><nav id="tabs"></nav><button class="avbtn" id="meBtn" aria-label="Perfil"></button></header>
 <main>
-<section class="hero"><h1>Viajá acompañado.</h1><p>Encontrá un lugar en un auto o publicá tu viaje entre ciudades y repartí los gastos.</p>
+<section class="hero" id="hero"><h1>Viajá acompañado.</h1><p>Encontrá un lugar en un auto o publicá tu viaje entre ciudades y repartí los gastos.</p>
 <div class="seg" id="roleSeg"><span class="pill"></span><button data-r="pasajero">Soy pasajero</button><button data-r="conductor">Soy conductor</button></div></section>
 
 <section id="v-buscar">
@@ -188,23 +201,55 @@ function renderList(){
  $('#list').innerHTML=r.length?r.map(card).join(''):'<div class="empty">No hay viajes para esa búsqueda.</div>';
  const m=live().filter(t=>t.driverId===uid);
  $('#mine').innerHTML=m.length?m.map(card).join(''):'<div class="empty">Todavía no publicaste viajes.</div>';r.concat(m).forEach(x=>{seen.add(x.id);lastLeft.set(x.id,x.left)})}
+let chat=null,marking=false;
+const other=m=>m.fromId===uid?m.toId:m.fromId;
+const ckey=m=>other(m)+'|'+(m.tripId||m.route);
+function convs(){const g={};msgs.forEach(m=>{(g[ckey(m)]=g[ckey(m)]||[]).push(m)});
+ return Object.entries(g).map(([k,a])=>{a.sort((x,y)=>x.ts-y.ts);const l=a[a.length-1];
+  return{key:k,other:other(l),tripId:l.tripId,route:l.route,list:a,last:l,unread:a.filter(m=>m.toId===uid&&!m.read).length}}).sort((x,y)=>y.last.ts-x.last.ts)}
+const bubble=m=>`<div class="bub ${m.fromId===uid?'me':'th'}">${esc(m.text)}<time>${new Date(m.ts).toLocaleString('es-AR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</time></div>`;
 function renderMsgs(){
- const mine=msgs.sort((a,b)=>b.ts-a.ts);
- $('#msgs').innerHTML=!uid?'<div class="empty">Iniciá sesión para ver tus mensajes.</div>':mine.length?mine.map(m=>{const rx=m.toId===uid,o=who(rx?m.fromId:m.toId);return `<div class="msg"><img class="av" src="${esc(o.photo)}" alt=""><div><b>${esc(rx?o.name:'Para '+o.name)}</b> <small class="meta">· ${esc(m.route)} · ${rx?'recibido':'enviado'}</small><div>${esc(m.text)}</div>${rx?`<div class="acts" style="margin-top:8px"><button class="btn sec sm" data-reply="${esc(m.id)}">Responder</button></div>`:''}</div></div>`}).join(''):'<div class="empty">No tenés mensajes.</div>';
+ const box=$('#msgs');
+ if(!uid){chat=null;box.dataset.mode='';box.innerHTML='<div class="empty">Iniciá sesión para ver tus mensajes.</div>';renderTabs();return}
+ const cs=convs();
+ if(chat){
+  const c=cs.find(x=>x.key===chat.key),list=c?c.list:[],o=who(chat.other);
+  if(box.dataset.mode!=='chat'){box.dataset.mode='chat';
+   box.innerHTML=`<div class="chath"><button class="btn sec sm" id="cBack">‹ Volver</button><img class="av" src="${esc(o.photo)}" alt=""><div class="g"><b>${esc(o.name)}</b><br><small class="meta">${esc(chat.route)}</small></div></div><div id="cLog"></div><form id="cForm" class="cform"><input id="cTxt" placeholder="Escribí un mensaje…" autocomplete="off" maxlength="500"><button class="btn" id="cSend" type="submit">Enviar</button></form>`;
+   $('#cBack').onclick=()=>{chat=null;renderMsgs()};
+   $('#cForm').onsubmit=sendChat;
+   $('#cLog').dataset.first=1}
+  const log=$('#cLog'),near=log.dataset.first||log.scrollHeight-log.scrollTop-log.clientHeight<80;
+  log.innerHTML=list.length?list.map(bubble).join(''):'<div class="empty">Escribí el primer mensaje.</div>';
+  if(near){log.scrollTop=log.scrollHeight;delete log.dataset.first}
+  if(list.some(m=>m.toId===uid&&!m.read)&&!marking){marking=true;
+   sb.from('messages').update({read:true}).eq('to_id',uid).eq('from_id',chat.other).eq('read',false).then(r=>{marking=false;if(!r.error)load()})}
+ }else{
+  box.dataset.mode='list';
+  box.innerHTML=cs.length?cs.map(c=>{const o=who(c.other),l=c.last;return `<div class="conv" data-chat="${esc(c.key)}"><img class="av" src="${esc(o.photo)}" alt=""><div class="g"><b>${esc(o.name)}</b> <small class="meta">· ${esc(c.route)}</small><div class="meta" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${l.fromId===uid?'Vos: ':''}${esc(l.text)}</div></div>${c.unread?`<span class="dot">${c.unread}</span>`:''}</div>`}).join(''):'<div class="empty">No tenés mensajes.</div>'}
  renderTabs()}
+async function sendChat(e){e.preventDefault();
+ const i=$('#cTxt'),x=i.value.trim();if(!x||!chat)return;
+ $('#cSend').disabled=true;
+ const r=await sb.from('messages').insert({trip_id:chat.tripId,from_id:uid,to_id:chat.other,body:x,route:chat.route});
+ const b=$('#cSend');if(b)b.disabled=false;
+ if(r.error){console.error(r.error);toast('No se pudo enviar: '+r.error.message);return}
+ i.value='';await load();const t=$('#cTxt');if(t)t.focus()}
+$('#msgs').onclick=e=>{const b=e.target.closest('[data-chat]');if(!b)return;
+ const c=convs().find(x=>x.key===b.dataset.chat);
+ if(c){chat={key:c.key,other:c.other,tripId:c.tripId,route:c.route};renderMsgs();const i=$('#cTxt');if(i)i.focus()}};
 function renderTabs(){
  const un=msgs.filter(m=>m.toId===uid&&!m.read).length;
  const tabs=[['buscar','Viajes']].concat(role==='conductor'?[['publicar','Publicar']]:[],[['mensajes','Mensajes']]);
  $('#tabs').innerHTML=tabs.map(([k,l])=>`<button data-v="${k}" class="${view===k?'on':''}">${l}${k==='mensajes'&&un?`<span class="dot">${un}</span>`:''}</button>`).join('');
  $('#meBtn').innerHTML=meP()?`<img class="av" src="${esc(who(uid).photo)}" alt="">`:'<span class="btn sec sm">Entrar</span>'}
 const renderAll=()=>{renderList();renderMsgs()};
-function show(v){view=v;$('#roleSeg').hidden=v!=='buscar';setTimeout(movePill,0);['buscar','publicar','mensajes'].forEach(k=>$('#v-'+k).hidden=k!==v);
- if(v==='mensajes'&&uid&&msgs.some(m=>m.toId===uid&&!m.read))sb.from('messages').update({read:true}).eq('to_id',uid).eq('read',false).then(()=>load());
- renderAll()}
+function show(v){view=v;$('#roleSeg').hidden=v!=='buscar';$('#hero').hidden=v==='mensajes';setTimeout(movePill,0);['buscar','publicar','mensajes'].forEach(k=>$('#v-'+k).hidden=k!==v);
+  renderAll()}
 function setRole(r){role=r;sg.set('holpin_role',r);if(r!=='conductor'&&view==='publicar')view='buscar';
  document.querySelectorAll('#roleSeg button').forEach(b=>b.classList.toggle('on',b.dataset.r===r));show(view)}
 $('#roleSeg').onclick=e=>{const r=e.target.dataset.r;if(!r)return;setRole(r);if(r==='conductor')show('publicar')};
-$('#tabs').onclick=e=>{if(e.target.closest('button'))show(e.target.closest('button').dataset.v)};
+$('#tabs').onclick=e=>{const b=e.target.closest('button');if(!b)return;if(b.dataset.v==='mensajes')chat=null;show(b.dataset.v)};
 ['#qFrom','#qTo'].forEach(s=>$(s).oninput=renderList);
 
 function authSheet(){
@@ -235,21 +280,10 @@ function profile(first){
   close();load()}}
 $('#meBtn').onclick=()=>{if(!sb)return;uid?profile(false):authSheet()};
 
-function compose(o){
- const w=who(o.toId);
- sheet(`<h3>Mensaje a ${esc(w.name)}</h3><p>${esc(o.route)}</p>
- <textarea id="mTxt" rows="4">${esc(o.text)}</textarea>
- <div class="acts"><button class="btn" id="mSend">Enviar</button><button class="btn sec" id="mCancel">Cancelar</button></div>`);
- $('#mCancel').onclick=close;
- $('#mSend').onclick=async()=>{const x=$('#mTxt').value.trim();if(!x)return;$('#mSend').disabled=true;
-  const r=await sb.from('messages').insert({trip_id:o.tripId,from_id:uid,to_id:o.toId,body:x,route:o.route});
-  if(r.error){console.error(r.error);toast('No se pudo enviar: '+r.error.message);$('#mSend').disabled=false;return}
-  close();toast('Mensaje enviado');load()}}
 function ask(t){const w=who(t.driverId);
- compose({toId:t.driverId,tripId:t.id,route:t.from+' → '+t.to,text:`Hola ${w.name}, ¿sigue disponible el viaje de ${t.from} a ${t.to} del ${fmt(t.when)}?`})}
-$('#msgs').onclick=e=>{const b=e.target.closest('[data-reply]');if(!b)return;
- const m=msgs.find(x=>String(x.id)===b.dataset.reply);
- if(m)compose({toId:m.fromId,tripId:m.tripId,route:m.route,text:''})};
+ chat={key:t.driverId+'|'+t.id,other:t.driverId,tripId:t.id,route:t.from+' → '+t.to};
+ show('mensajes');
+ const i=$('#cTxt');if(i){i.value=`Hola ${w.name}, ¿sigue disponible el viaje de ${t.from} a ${t.to} del ${fmt(t.when)}?`;i.focus()}}
 
 async function onAct(e){
  const b=e.target.closest('[data-a]');if(!b)return;const t=trips.find(x=>x.id===b.dataset.id);if(!t)return;
