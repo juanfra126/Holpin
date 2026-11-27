@@ -233,18 +233,50 @@ const need=()=>{if(!uid){authSheet();return false}if(!profilesLoaded){toast('Est
 let loadSeq=0;
 async function load(){
  const my=++loadSeq;
- const [p,t,m,qr,rr]=await Promise.all([sb.from('profiles').select('id,name,photo'),sb.from('trips').select('*'),uid?sb.from('messages').select('*'):Promise.resolve({data:[]}),sb.from('trip_requests').select('*'),sb.from('trip_ratings').select('*')]);
+ const results=await Promise.all([
+  sb.from('profiles').select('id,name,photo'),
+  sb.from('trips').select('*'),
+  uid?sb.from('messages').select('*'):Promise.resolve({data:[]}),
+  sb.from('trip_requests').select('*'),
+  sb.from('trip_ratings').select('*')
+ ]);
  if(my!==loadSeq)return false;
- if(p.error){profilesLoaded=false;console.error('No se pudieron cargar los perfiles:',p.error);$('#list').innerHTML='<div class="empty">No se pudieron cargar los perfiles. Revisá tu conexión e intentá actualizar.</div>';return false}
- profs={};(p.data||[]).forEach(x=>profs[x.id]=x);profilesLoaded=true;
- if(t.error){console.error('No se pudieron cargar los viajes:',t.error);trips=[]}else
- trips=(t.data||[]).map(x=>({id:x.id,driverId:x.driver_id,from:x.origin,to:x.destination,when:x.departs_at,price:x.price,seats:x.seats,left:x.seats_left,soldOutAt:x.sold_out_at?new Date(x.sold_out_at).getTime():null,description:x.description||'',completedAt:x.completed_at||null}));
+ const p=results[0],t=results[1],m=results[2],qr=results[3],rr=results[4];
+ if(p.error){
+  profilesLoaded=false;
+  console.error('No se pudieron cargar los perfiles:',p.error);
+  $('#list').innerHTML='<div class="empty">No se pudieron cargar los perfiles. Revisá tu conexión e intentá actualizar.</div>';
+  return false;
+ }
+ profs={};
+ (p.data||[]).forEach(x=>{profs[x.id]=x});
+ profilesLoaded=true;
+ if(t.error){
+  console.error('No se pudieron cargar los viajes:',t.error);
+  trips=[];
+ }else{
+  trips=(t.data||[]).map(x=>({
+   id:x.id,driverId:x.driver_id,from:x.origin,to:x.destination,when:x.departs_at,
+   price:x.price,seats:x.seats,left:x.seats_left,
+   soldOutAt:x.sold_out_at?new Date(x.sold_out_at).getTime():null,
+   description:x.description||'',completedAt:x.completed_at||null
+  }));
+ }
  tripRequests=qr.error?[]:(qr.data||[]).map(x=>({id:x.id,tripId:x.trip_id,passengerId:x.passenger_id,status:x.status}));
  tripRatings=rr.error?[]:(rr.data||[]).map(x=>({id:x.id,tripId:x.trip_id,passengerId:x.passenger_id,driverId:x.driver_id,rating:x.rating}));
- msgs=(m.data||[]).map(x=>({id:x.id,tripId:x.trip_id,fromId:x.from_id,toId:x.to_id,text:x.body,route:x.route||'',ts:new Date(x.created_at).getTime(),read:x.read}));
- if(m.error&&!window._me){window._me=1;console.error(m.error);toast('No se pudieron cargar los mensajes: '+m.error.message)}
- ready=true;renderAll();return true}
-
+ msgs=(m.data||[]).map(x=>({
+  id:x.id,tripId:x.trip_id,fromId:x.from_id,toId:x.to_id,text:x.body,
+  route:x.route||'',ts:new Date(x.created_at).getTime(),read:x.read
+ }));
+ if(m.error&&!window._me){
+  window._me=1;
+  console.error(m.error);
+  toast('No se pudieron cargar los mensajes: '+m.error.message);
+ }
+ ready=true;
+ renderAll();
+ return true;
+}
 const seen=new Set(),lastLeft=new Map();
 function ratingSummary(driverId){
  const a=tripRatings.filter(x=>x.driverId===driverId);
