@@ -505,7 +505,22 @@ function installSteps(device){
  $('#installBack').onclick=installHelp;
  $('#installDone').onclick=close;
 }
+function holpinIsInstalled(){
+ const iosStandalone=window.navigator.standalone===true;
+ const displayStandalone=window.matchMedia&&(
+  window.matchMedia('(display-mode: standalone)').matches||
+  window.matchMedia('(display-mode: fullscreen)').matches
+ );
+ return iosStandalone||displayStandalone;
+}
+function updateInstallHelp(){
+ const button=$('#installHelp');
+ if(button)button.hidden=holpinIsInstalled();
+}
 $('#installHelp').onclick=installHelp;
+updateInstallHelp();
+window.matchMedia&&window.matchMedia('(display-mode: standalone)').addEventListener?.('change',updateInstallHelp);
+
 
 $('#ov').onclick=e=>{if(e.target.id==='ov'&&!$('#ov').dataset.lock)close()};
 
