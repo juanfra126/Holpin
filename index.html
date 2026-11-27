@@ -216,7 +216,7 @@ const who=id=>{const p=profs[id]||{};return{name:p.name||'Usuario',photo:/^data:
 const meP=()=>uid?profs[uid]:null;
 const live=()=>trips.filter(t=>!(t.soldOutAt&&Date.now()-t.soldOutAt>=H3));
 function left(t){const ms=H3-(Date.now()-t.soldOutAt);return Math.floor(ms/36e5)+' h '+Math.ceil((ms%36e5)/6e4)+' min'}
-const need=()=>{if(!uid){authSheet();return false}if(!meP()){profile(true);return false}return true};
+const need=()=>{if(!uid){authSheet();return false}if(!profilesLoaded){toast('Estamos cargando tu perfil. Probá de nuevo en un momento.');return false}if(!meP()){profile(true);return false}return true};
 
 let loadSeq=0;
 async function load(){
