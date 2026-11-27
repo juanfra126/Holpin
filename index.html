@@ -2,7 +2,7 @@
 <html lang="es"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
-<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#fbfbfd" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" type="image/png" href="logo-negro.png" media="(prefers-color-scheme: light)"><link rel="icon" type="image/png" href="logo-blanco.png" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#fbfbfd" media="(prefers-color-scheme: light)"><meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)"><link rel="apple-touch-icon" href="logo-negro.png"><link rel="icon" type="image/png" href="logo-negro.png" media="(prefers-color-scheme: light)"><link rel="icon" type="image/png" href="logo-blanco.png" media="(prefers-color-scheme: dark)">
 <title>Holpin — Coordiná tus viajes</title>
 <style>
 :root{--bg:#fbfbfd;--card:#fff;--tx:#1d1d1f;--tx2:#6e6e73;--line:#d2d2d7;--blue:#0071e3;--red:#ff3b30;--green:#1d9b4a;--glass:rgba(251,251,253,.8);--fill:#f5f5f7;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -209,7 +209,7 @@ function sheet(h,lock){$('#sheet').innerHTML=h;$('#ov').hidden=false;$('#ov').da
 function close(){$('#ov').hidden=true}
 $('#ov').onclick=e=>{if(e.target.id==='ov'&&!$('#ov').dataset.lock)close()};
 
-let sb=null;try{if(window.supabase&&/^https:\/\//.test(SUPABASE_URL)&&SUPABASE_ANON_KEY.length>20)sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY)}catch(e){sb=null}
+let sb=null;try{if(window.supabase&&/^https:\/\//.test(SUPABASE_URL)&&SUPABASE_ANON_KEY.length>20)sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:window.localStorage}})}catch(e){sb=null}
 let uid=null,ready=false,profs={},trips=[],msgs=[],role=sg.get('holpin_role','pasajero'),view='buscar';
 const dflt=ini('?','#8e8e93');
 const who=id=>{const p=profs[id]||{};return{name:p.name||'Usuario',photo:/^data:image\//.test(p.photo||'')?p.photo:dflt}};
