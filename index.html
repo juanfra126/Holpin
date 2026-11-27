@@ -21,7 +21,7 @@ body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset
 .dot{background:var(--red);color:#fff;border-radius:980px;font-size:11px;padding:1px 6px;margin-left:4px}
 .avbtn{border:0;background:none;padding:0;cursor:pointer}
 .av{width:40px;height:40px;border-radius:50%;object-fit:cover;background:var(--fill);flex:none;display:block}
-.avbtn .av{width:32px;height:32px}
+.avbtn .av{width:32px;height:32px}.av[data-photo]{cursor:zoom-in}
 main{max-width:760px;margin:0 auto;padding:0 18px 60px}
 .hero{text-align:center;padding:44px 0 26px}
 h1{font-size:clamp(34px,8vw,56px);line-height:1.05;letter-spacing:-.03em;margin:0 0 12px;font-weight:700}
@@ -59,7 +59,7 @@ h2{font-size:24px;letter-spacing:-.02em;margin:26px 0 12px}
 .sheet h3{margin:0 0 6px;font-size:24px;letter-spacing:-.02em}
 .sheet p{color:var(--tx2);margin:0 0 16px;font-size:15px}
 .pic{display:flex;align-items:center;gap:14px;margin-bottom:14px}
-.pic .av{width:72px;height:72px}
+#photoSheet img{display:block;max-width:min(82vw,520px);max-height:75vh;width:auto;height:auto;object-fit:contain;border-radius:18px;margin:auto}.pic .av{width:72px;height:72px}
 #toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--tx);color:var(--bg);padding:11px 20px;border-radius:980px;font-size:14px;z-index:40;opacity:0;pointer-events:none;transition:opacity .25s}
 #toast.on{opacity:1}
 /* ---- Animaciones ---- */
@@ -261,16 +261,17 @@ function card(t,i=0){
   (t.completedAt?'<span class="badge" style="background:var(--green)">Finalizado</span>':'<button class="btn sm" data-a="finish" data-id="'+esc(t.id)+'" '+(new Date(t.when).getTime()>Date.now()?'disabled title="Se habilita después del horario de salida"':'')+'>Finalizar viaje</button>')+
   '<button class="btn sec sm" data-a="del" data-id="'+esc(t.id)+'" style="margin-left:auto;color:var(--red)">Cancelar viaje</button>';
  }else if(myReq){
-  a=myReq.status==='pending'?'<span class="badge">Postulación enviada</span>':myReq.status==='accepted'?'<span class="badge" style="background:var(--green)">Postulación aceptada</span>':'<span class="meta">Postulación no aceptada</span>';
+  a=myReq.status==='pending'?'<span class="badge">Postulación enviada</span>':myReq.status==='accepted'?'<span class="badge" style="background:var(--green)">Lugar reservado</span>':'<span class="meta">Postulación cancelada</span>';
+  if(myReq.status!=='rejected'&&!t.completedAt)a+='<button class="btn sec sm" data-a="withdraw" data-id="'+esc(t.id)+'" data-rid="'+esc(myReq.id)+'">Cancelar postulación</button>';
   if(myReq.status==='accepted'&&t.completedAt&&!tripRatings.some(x=>x.tripId===t.id&&x.passengerId===uid))a+='<button class="btn sm" data-a="rate" data-id="'+esc(t.id)+'">Calificar conductor</button>';
   else if(myReq.status==='accepted'&&tripRatings.some(x=>x.tripId===t.id&&x.passengerId===uid))a+='<span class="meta">Ya calificaste este viaje</span>';
- }else a='<button class="btn sm" data-a="apply" data-id="'+esc(t.id)+'" '+(out||t.completedAt?'disabled':'')+'>Postularme</button><button class="btn sec sm" data-a="ask" data-id="'+esc(t.id)+'">Consultar</button>';
- const reqHtml=own&&mine.length?'<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)"><b>Postulaciones ('+mine.length+')</b>'+mine.map(r=>{const p=who(r.passengerId);return '<div class="row" style="margin-top:10px"><img class="av" src="'+esc(p.photo)+'" alt=""><div class="g"><b>'+esc(p.name)+'</b><br><small class="meta">'+(r.status==='pending'?'Pendiente':r.status==='accepted'?'Aceptada':'Rechazada')+'</small></div>'+(r.status==='pending'&&!t.completedAt?'<button class="btn sec sm" data-a="reject" data-rid="'+esc(r.id)+'">Rechazar</button><button class="btn sm" data-a="accept" data-rid="'+esc(r.id)+'" data-id="'+esc(t.id)+'">Aceptar</button>':'')+'</div>'}).join('')+'</div>':'';
- return '<article class="card'+(seen.has(t.id)?'':' new')+'" style="--i:'+Math.min(i,8)+'"><div class="row"><img class="av" src="'+esc(w.photo)+'" alt=""><div class="g"><b>'+esc(w.name)+'</b><br><small>Conductor · '+ratingSummary(t.driverId)+'</small></div><span class="price">'+money(t.price)+'</span></div>'+
+ }else a='<button class="btn sm" data-a="apply" data-id="'+esc(t.id)+'" '+(out||t.completedAt?'disabled':'')+'>Postularme</button>';
+ const reqHtml=own&&mine.length?'<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)"><b>Postulaciones ('+mine.length+')</b>'+mine.map(r=>{const p=who(r.passengerId);return '<div class="row" style="margin-top:10px"><img class="av" data-photo="'+esc(p.photo)+'" src="'+esc(p.photo)+'" alt="Foto de '+esc(p.name)+'"><div class="g"><b>'+esc(p.name)+'</b><br><small class="meta">'+(r.status==='pending'?'Pendiente':r.status==='accepted'?'Aceptada':'Rechazada')+'</small></div>'+'</div>'}).join('')+'</div>':'';
+ return '<article class="card'+(seen.has(t.id)?'':' new')+'" style="--i:'+Math.min(i,8)+'"><div class="row"><img class="av" data-photo="'+esc(w.photo)+'" src="'+esc(w.photo)+'" alt="Foto de '+esc(w.name)+'"><div class="g"><b>'+esc(w.name)+'</b><br><small>Conductor · '+ratingSummary(t.driverId)+'</small></div><span class="price">'+money(t.price)+'</span></div>'+
  '<div class="route">'+esc(t.from)+'<i>→</i>'+esc(t.to)+'</div><div class="meta">Sale '+fmt(t.when)+'</div>'+
  (t.description?'<p style="margin:12px 0 0;line-height:1.45;white-space:pre-wrap">'+esc(t.description)+'</p>':'')+
  '<div class="meta" style="margin-top:8px">'+(t.completedAt?'<span class="badge" style="background:var(--green)">Viaje finalizado</span>':out?'<span class="badge">Agotado</span>':'<span class="ok">'+t.left+' '+(t.left===1?'asiento disponible':'asientos disponibles')+'</span>')+'</div>'+
- '<div class="acts">'+a+'</div>'+reqHtml+'</article>';
+ '<div class="acts">'+a+(!own?'<button class="btn sec sm" data-a="ask" data-id="'+esc(t.id)+'">Enviar mensaje al conductor</button>':'')+'</div>'+reqHtml+'</article>';
 }
 function renderList(){
  if(!ready)return;
@@ -336,6 +337,7 @@ async function delChat(){
  const r=await sb.from('messages').delete().in('id',c.list.map(m=>m.id)).select();
  if(r.error||!r.data||!r.data.length){console.error(r.error);toast('No se pudo eliminar'+(r.error?': '+r.error.message:'. Falta la política de eliminación en Supabase.'));load();return}
  chat=null;toast('Chat eliminado');await load()}
+document.addEventListener('click',e=>{const im=e.target.closest('img[data-photo]');if(im){sheet('<div id="photoSheet"><img src="'+esc(im.dataset.photo)+'" alt="Foto ampliada"><div class="acts" style="justify-content:center"><button class="btn sec" id="closePhoto">Cerrar</button></div></div>');$('#closePhoto').onclick=close}});
 $('#msgs').onclick=e=>{
  const d=e.target.closest('[data-del]');if(d)return armDel(d,()=>delMsg(d.dataset.del,d));
  const da=e.target.closest('#cDelAll');if(da)return armDel(da,delChat);
@@ -447,6 +449,7 @@ async function onAct(e){
  const a=b.dataset.a;
  if(a==='ask')return need()&&ask(t);
  if(a==='apply')return applyToTrip(t);
+ if(a==='withdraw')return withdrawApplication(b.dataset.rid);
  if(a==='rate')return rateTrip(t);
  if(a==='accept'||a==='reject'){if(t.driverId!==uid)return;const req=tripRequests.find(x=>x.id===b.dataset.rid);if(!req)return;const status=a==='accept'?'accepted':'rejected';const up=await sb.from('trip_requests').update({status}).eq('id',req.id);if(up.error){toast('No se pudo actualizar: '+up.error.message);return}toast(a==='accept'?'Pasajero aceptado':'Postulación rechazada');await load();return}
  if(a==='finish'){if(t.driverId!==uid)return;const up=await sb.from('trips').update({completed_at:new Date().toISOString()}).eq('id',t.id);if(up.error){toast('No se pudo finalizar: '+up.error.message);return}toast('Viaje finalizado. Ya pueden calificarte.');await load();return}
@@ -458,7 +461,8 @@ async function onAct(e){
  if(r&&r.error)toast('No se pudo actualizar');load()}
 $('#list').onclick=onAct;$('#mine').onclick=onAct;
 
-async function applyToTrip(t){if(!need())return;if(t.driverId===uid)return toast('No podés postularte a tu propio viaje');if(t.left<=0)return toast('No quedan asientos disponibles');const r=await sb.from('trip_requests').insert({trip_id:t.id,passenger_id:uid,status:'pending'});if(r.error){toast(r.error.code==='23505'?'Ya te postulaste a este viaje':'No se pudo postular: '+r.error.message);return}toast('¡Postulación enviada!');await load()}
+async function applyToTrip(t){if(!need())return;if(t.driverId===uid)return toast('No podés postularte a tu propio viaje');if(t.left<=0)return toast('No quedan asientos disponibles');const r=await sb.from('trip_requests').insert({trip_id:t.id,passenger_id:uid,status:'accepted'});if(r.error){toast(r.error.code==='23505'?'Ya te postulaste a este viaje':'No se pudo postular: '+r.error.message);return}toast('¡Listo! Tu lugar quedó reservado.');await load()}
+async function withdrawApplication(id){const r=await sb.from('trip_requests').delete().eq('id',id).eq('passenger_id',uid).select();if(r.error||!r.data||!r.data.length){toast('No se pudo cancelar la postulación'+(r.error?': '+r.error.message:''));return}toast('Postulación cancelada. El asiento quedó disponible.');await load()}
 async function rateTrip(t){const req=requestStatus(t);if(!req||req.status!=='accepted'||!t.completedAt)return toast('Solo podés calificar viajes finalizados en los que fuiste aceptado');let score=5;const labels=['','Muy malo','Malo','Bueno','Muy bueno','Excelente'];sheet('<h3>Calificá al conductor</h3><p>¿Cómo fue tu experiencia en este viaje?</p><div class="acts" id="stars" style="justify-content:center;gap:8px">'+[1,2,3,4,5].map(n=>'<button type="button" class="btn sec" data-star="'+n+'" style="font-size:25px;padding:8px 12px;color:#e5a000">★</button>').join('')+'</div><p id="ratingLabel" style="text-align:center;margin-top:10px">Excelente</p><div class="acts"><button class="btn" id="saveRating">Enviar calificación</button><button class="btn sec" id="cancelRating">Cancelar</button></div>');const draw=()=>{$('#stars').querySelectorAll('[data-star]').forEach(x=>x.style.opacity=+x.dataset.star<=score?'1':'.3');$('#ratingLabel').textContent=labels[score]};draw();$('#stars').onclick=e=>{const b=e.target.closest('[data-star]');if(b){score=+b.dataset.star;draw()}};$('#cancelRating').onclick=close;$('#saveRating').onclick=async()=>{const r=await sb.from('trip_ratings').insert({trip_id:t.id,passenger_id:uid,driver_id:t.driverId,rating:score});if(r.error){toast(r.error.code==='23505'?'Ya calificaste este viaje':'No se pudo guardar: '+r.error.message);return}close();toast('¡Gracias por calificar!');await load()}}
 $('#pub').onclick=async()=>{
  if(!need())return;
@@ -488,7 +492,7 @@ function boot(){
  sb.channel('holpin').on('postgres_changes',{event:'*',schema:'public'},p=>{
   if(p.table==='messages'&&p.eventType==='INSERT'&&p.new&&uid&&p.new.to_id===uid)notify(p.new);
   load()}).subscribe();
- setInterval(()=>{renderList();if(uid)sb.from('trips').delete().eq('driver_id',uid).lt('sold_out_at',new Date(Date.now()-H3).toISOString()).then(()=>{})},30000)}
+ setInterval(()=>{renderList();if(uid){sb.from('trips').delete().eq('driver_id',uid).lt('sold_out_at',new Date(Date.now()-H3).toISOString()).then(()=>{});if(document.hidden)load()}},15000)}
 const CITIES=['Buenos Aires','Córdoba','Rosario','Mendoza','La Plata','Mar del Plata','Tucumán','Salta','Santa Fe','Neuquén','Bariloche','Paraná','Posadas','Corrientes','San Luis','Bahía Blanca'];
 let sugEl=null;
 function sugShow(inp){
