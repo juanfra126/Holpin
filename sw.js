@@ -5,11 +5,11 @@ self.addEventListener('push',e=>{
   let d={};
   try{d=e.data?e.data.json():{}}catch(_){d={body:e.data?e.data.text():''}}
   e.waitUntil(self.clients.matchAll({type:'window',includeUncontrolled:true}).then(list=>{
-    if(list.some(c=>c.visibilityState==='visible'))return;
-    const icon=new URL('icon-192.png',self.registration.scope).href;
+    if(list.some(c=>c.visibilityState==='visible'))return; // la app está a la vista: avisa ella misma
+    const icon=new URL('icon-192.png',self.registration.scope).href,badge=new URL('badge-96.png',self.registration.scope).href;
     return self.registration.showNotification(d.title||'Holpin',{
       body:d.body||'Tenés un mensaje nuevo',
-      icon,badge:icon,tag:'holpin-msg',renotify:true,silent:false,vibrate:[200,100,200]
+      icon,badge,tag:'holpin-msg',renotify:true,silent:false,vibrate:[200,100,200]
     });
   }));
 });
@@ -20,3 +20,4 @@ self.addEventListener('notificationclick',e=>{
     return self.clients.openWindow('./');
   }));
 });
+
