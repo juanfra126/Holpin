@@ -168,7 +168,7 @@ async function load(){
  if(p.error||t.error){$('#list').innerHTML='<div class="empty">No se pudieron cargar los datos. Revisá la configuración de Supabase.</div>';return}
  profs={};(p.data||[]).forEach(x=>profs[x.id]=x);
  trips=(t.data||[]).map(x=>({id:x.id,driverId:x.driver_id,from:x.origin,to:x.destination,when:x.departs_at,price:x.price,seats:x.seats,left:x.seats_left,soldOutAt:x.sold_out_at?new Date(x.sold_out_at).getTime():null}));
- msgs=(m.data||[]).map(x=>({id:x.id,fromId:x.from_id,toId:x.to_id,text:x.body,route:x.route||'',ts:new Date(x.created_at).getTime(),read:x.read}));
+ msgs=(m.data||[]).map(x=>({id:x.id,tripId:x.trip_id,fromId:x.from_id,toId:x.to_id,text:x.body,route:x.route||'',ts:new Date(x.created_at).getTime(),read:x.read}));
  ready=true;renderAll()}
 
 const seen=new Set(),lastLeft=new Map();
@@ -190,7 +190,7 @@ function renderList(){
  $('#mine').innerHTML=m.length?m.map(card).join(''):'<div class="empty">Todavía no publicaste viajes.</div>';r.concat(m).forEach(x=>{seen.add(x.id);lastLeft.set(x.id,x.left)})}
 function renderMsgs(){
  const mine=msgs.sort((a,b)=>b.ts-a.ts);
- $('#msgs').innerHTML=!uid?'<div class="empty">Iniciá sesión para ver tus mensajes.</div>':mine.length?mine.map(m=>{const rx=m.toId===uid,o=who(rx?m.fromId:m.toId);return `<div class="msg"><img class="av" src="${esc(o.photo)}" alt=""><div><b>${esc(rx?o.name:'Para '+o.name)}</b> <small class="meta">· ${esc(m.route)} · ${rx?'recibido':'enviado'}</small><div>${esc(m.text)}</div></div></div>`}).join(''):'<div class="empty">No tenés mensajes.</div>';
+ $('#msgs').innerHTML=!uid?'<div class="empty">Iniciá sesión para ver tus mensajes.</div>':mine.length?mine.map(m=>{const rx=m.toId===uid,o=who(rx?m.fromId:m.toId);return `<div class="msg"><img class="av" src="${esc(o.photo)}" alt=""><div><b>${esc(rx?o.name:'Para '+o.name)}</b> <small class="meta">· ${esc(m.route)} · ${rx?'recibido':'enviado'}</small><div>${esc(m.text)}</div>${rx?`<div class="acts" style="margin-top:8px"><button class="btn sec sm" data-reply="${esc(m.id)}">Responder</button></div>`:''}</div></div>`}).join(''):'<div class="empty">No tenés mensajes.</div>';
  renderTabs()}
 function renderTabs(){
  const un=msgs.filter(m=>m.toId===uid&&!m.read).length;
@@ -235,16 +235,21 @@ function profile(first){
   close();load()}}
 $('#meBtn').onclick=()=>{if(!sb)return;uid?profile(false):authSheet()};
 
-function ask(t){
- const w=who(t.driverId);
- sheet(`<h3>Mensaje a ${esc(w.name)}</h3><p>${esc(t.from)} → ${esc(t.to)} · ${fmt(t.when)}</p>
- <textarea id="mTxt" rows="4">Hola ${esc(w.name)}, ¿sigue disponible el viaje de ${esc(t.from)} a ${esc(t.to)} del ${fmt(t.when)}?</textarea>
+function compose(o){
+ const w=who(o.toId);
+ sheet(`<h3>Mensaje a ${esc(w.name)}</h3><p>${esc(o.route)}</p>
+ <textarea id="mTxt" rows="4">${esc(o.text)}</textarea>
  <div class="acts"><button class="btn" id="mSend">Enviar</button><button class="btn sec" id="mCancel">Cancelar</button></div>`);
  $('#mCancel').onclick=close;
  $('#mSend').onclick=async()=>{const x=$('#mTxt').value.trim();if(!x)return;$('#mSend').disabled=true;
-  const r=await sb.from('messages').insert({trip_id:t.id,from_id:uid,to_id:t.driverId,body:x,route:t.from+' → '+t.to});
-  if(r.error){toast('No se pudo enviar el mensaje');$('#mSend').disabled=false;return}
+  const r=await sb.from('messages').insert({trip_id:o.tripId,from_id:uid,to_id:o.toId,body:x,route:o.route});
+  if(r.error){console.error(r.error);toast('No se pudo enviar: '+r.error.message);$('#mSend').disabled=false;return}
   close();toast('Mensaje enviado');load()}}
+function ask(t){const w=who(t.driverId);
+ compose({toId:t.driverId,tripId:t.id,route:t.from+' → '+t.to,text:`Hola ${w.name}, ¿sigue disponible el viaje de ${t.from} a ${t.to} del ${fmt(t.when)}?`})}
+$('#msgs').onclick=e=>{const b=e.target.closest('[data-reply]');if(!b)return;
+ const m=msgs.find(x=>String(x.id)===b.dataset.reply);
+ if(m)compose({toId:m.fromId,tripId:m.tripId,route:m.route,text:''})};
 
 async function onAct(e){
  const b=e.target.closest('[data-a]');if(!b)return;const t=trips.find(x=>x.id===b.dataset.id);if(!t)return;
