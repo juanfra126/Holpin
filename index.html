@@ -249,6 +249,94 @@ input,textarea{background:#f6f7fa;border-color:#edf0f4;border-radius:12px}
 .hero .lg{display:block;width:92px;height:92px;margin:0 auto 14px;animation:pop .9s cubic-bezier(.2,.9,.3,1.15) both}
 .btn[data-armed]{background:var(--red);color:#fff}
 @media (prefers-reduced-motion:reduce){.bub.new,.conv.new,.bub.out,.conv.out{animation:none!important}}
+
+/* ---- Correcciones puntuales: navegación móvil y modo oscuro ---- */
+@media (max-width:700px){
+  /* El blur del encabezado creaba un contenedor para el menú fixed
+     y podía dejar la navegación encerrada dentro de la barra superior. */
+  .nav{
+    -webkit-backdrop-filter:none!important;
+    backdrop-filter:none!important;
+    overflow:visible!important;
+    isolation:auto;
+  }
+  #tabs{
+    display:flex!important;
+    position:fixed!important;
+    inset:auto 0 0 0!important;
+    width:100%!important;
+    height:auto!important;
+    min-height:64px;
+    z-index:999!important;
+    transform:none!important;
+    visibility:visible!important;
+    opacity:1!important;
+    background:var(--glass)!important;
+    color:var(--tx)!important;
+    border-top:1px solid var(--line)!important;
+    border-bottom:0!important;
+    padding:8px 6px calc(8px + env(safe-area-inset-bottom,0px))!important;
+    display:flex!important;
+    flex-direction:row!important;
+    justify-content:space-around!important;
+    align-items:stretch!important;
+    gap:3px!important;
+    overflow:visible!important;
+    -webkit-backdrop-filter:blur(22px);
+    backdrop-filter:blur(22px);
+  }
+  #tabs button{
+    display:flex!important;
+    flex:1 1 0!important;
+    min-width:0!important;
+    min-height:46px;
+    align-items:center!important;
+    justify-content:center!important;
+    white-space:normal!important;
+    overflow-wrap:anywhere;
+    text-align:center!important;
+    font-size:clamp(10px,2.8vw,12px)!important;
+    line-height:1.2;
+    padding:7px 2px!important;
+    color:var(--tx2)!important;
+    background:transparent!important;
+  }
+  #tabs button.on{
+    background:var(--fill)!important;
+    color:var(--tx)!important;
+  }
+  main{
+    width:100%;
+    min-width:0;
+    padding-left:14px!important;
+    padding-right:14px!important;
+    padding-bottom:calc(100px + env(safe-area-inset-bottom,0px))!important;
+  }
+  main>section,section[id^="v-"]{min-width:0;width:100%}
+  .panel,.card,.activity-panel{min-width:0;max-width:100%}
+  .route{font-size:clamp(18px,5vw,23px);overflow-wrap:anywhere}
+  .activity-head{align-items:flex-start}
+  .periods{max-width:100%;min-width:0}
+  .periods button{min-width:0;flex:1 1 auto}
+  .activity-bars{overflow-x:auto}
+}
+@media (prefers-color-scheme:dark){
+  body{background:var(--bg)!important}
+  #tabs{background:var(--glass)!important;border-color:var(--line)!important}
+  #tabs button.on{background:var(--fill)!important;color:var(--tx)!important}
+  .periods{background:var(--fill)!important}
+  .periods button{color:var(--tx2)}
+  .periods button.on{background:var(--card)!important;color:var(--tx)!important}
+  .btn.sec{background:var(--fill);color:var(--blue)}
+  input,textarea{background:var(--fill);color:var(--tx);border-color:var(--line)}
+  .panel,.card,.stat,.activity-panel{background:var(--card);border-color:var(--line)}
+}
+:root[data-theme="dark"] body{background:var(--bg)!important}
+:root[data-theme="dark"] #tabs{background:var(--glass)!important;border-color:var(--line)!important}
+:root[data-theme="dark"] #tabs button.on{background:var(--fill)!important;color:var(--tx)!important}
+:root[data-theme="dark"] .periods{background:var(--fill)!important}
+:root[data-theme="dark"] .periods button.on{background:var(--card)!important;color:var(--tx)!important}
+
 </style></head><body>
 <header class="nav"><div class="brand"><span class="lg"><img class="lg-l" src="logo-negro.png" alt="" width="64" height="64"><img class="lg-d" src="logo-blanco.png" alt="" width="64" height="64"></span><b>Holpin</b></div><nav id="tabs"></nav><button class="btn sec sm" id="bell" title="Activar avisos de mensajes nuevos" aria-label="Activar avisos" hidden>🔔</button><button class="avbtn" id="meBtn" aria-label="Perfil"></button></header>
 <main>
