@@ -745,7 +745,7 @@ button,a,label{-webkit-tap-highlight-color:transparent;touch-action:manipulation
  <div class="pedido-list-head"><div><div class="meta">CONEXIONES QUE ESTÁN BUSCANDO</div><h3>Pedidos de la comunidad</h3></div><span class="pedido-live">Actualizados</span></div>
  <div id="pedidosList"></div>
 </section>
-<section id="v-postulaciones" hidden><div class="activity-head"><div><div class="meta">Tus lugares reservados</div><h2>Mis postulaciones</h2></div></div><div id="myApplications"></div></section>
+<section id="v-postulaciones" hidden><div class="activity-head"><div><div class="meta">Tus lugares reservados</div><h2>Mis viajes</h2></div></div><div id="myApplications"></div></section>
 
 <section id="v-publicar" hidden>
 <div class="panel"><h3 style="margin:0 0 14px;font-size:22px">Publicar un viaje</h3>
@@ -1125,7 +1125,7 @@ function renderTabs(){
  const un=msgs.filter(m=>m.toId===uid&&!m.read).length;
  document.title=(un?'('+un+') ':'')+'Holpin — Coordiná tus viajes';
  $('#bell').hidden=!(uid&&'Notification' in window&&Notification.permission!=='denied'&&!pushOn);
- const tabs=[['buscar','Viajes'],['pedidos','Pedidos'],['postulaciones','Mis postulaciones'],['actividad','Actividad']].concat(role==='conductor'?[['publicar','Publicar']]:[],[['mensajes','Mensajes']]);
+ const tabs=[['buscar','Viajes'],['pedidos','Pedidos'],['postulaciones','Mis viajes'],['actividad','Actividad']].concat(role==='conductor'?[['publicar','Publicar']]:[],[['mensajes','Mensajes']]);
  const nav=$('#tabs');
  let lens=nav.querySelector('.tab-lens');
  if(!lens){lens=document.createElement('span');lens.className='tab-lens';lens.setAttribute('aria-hidden','true');}
