@@ -164,7 +164,81 @@ b.bump{display:inline-block;animation:bump .5s ease}
 .dot{animation:bounce .45s both,pulse 2s 1.2s infinite}
 #bell{animation:ring 2.4s ease-in-out 1s infinite;transform-origin:50% 0}
 #bell:hover{animation-play-state:paused}
-/* ---- Logo (cambia solo con el tema) ---- */
+
+/* ---- Holpin Premium: actividad y navegación adaptable ---- */
+:root{--navy:#14243a;--blue:#2864b4;--gold:#b78b4a;--line:#e6e9ef;--fill:#f4f6f9}
+body{background:linear-gradient(180deg,#f8f9fc 0%,var(--bg) 360px)}
+.nav{padding:12px max(22px,calc((100vw - 1120px)/2));gap:18px}
+.nav b{font-size:21px;letter-spacing:-.04em}
+#tabs{gap:6px}
+#tabs button{padding:9px 14px;font-weight:550}
+#tabs button.on{background:#eaf0f8;color:var(--navy)}
+main{max-width:1080px;padding:0 24px 90px}
+.hero{text-align:left;padding:42px 0 28px;max-width:760px}
+.hero .lg{display:none}
+.hero h1{background:none;-webkit-text-fill-color:initial;color:var(--navy);font-size:clamp(38px,5vw,58px);letter-spacing:-.055em}
+.hero p{margin:0 0 22px;max-width:580px;font-size:17px;line-height:1.6}
+.panel,.card{border:1px solid #e9edf3;box-shadow:0 8px 28px rgba(20,36,58,.055);border-radius:20px}
+.card{padding:22px}
+.route{font-size:24px;color:var(--navy)}
+.btn{background:var(--navy);border-radius:12px;font-weight:600}
+.btn.sec{background:#edf2f8;color:var(--navy)}
+input,textarea{background:#f6f7fa;border-color:#edf0f4;border-radius:12px}
+.activity-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin:28px 0 18px}
+.activity-head h2{margin:0;font-size:30px;color:var(--navy)}
+.periods{display:flex;gap:6px;flex-wrap:wrap;background:#eef1f6;padding:5px;border-radius:13px}
+.periods button{border:0;background:transparent;color:var(--tx2);font:inherit;font-size:13px;padding:8px 11px;border-radius:9px;cursor:pointer}
+.periods button.on{background:white;color:var(--navy);box-shadow:0 2px 7px #14243a12;font-weight:650}
+.stats-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:16px 0}
+.stat{background:var(--card);border:1px solid #e9edf3;border-radius:18px;padding:18px;min-width:0}
+.stat small{display:block;color:var(--tx2);font-size:12px;margin-bottom:10px}
+.stat strong{display:block;color:var(--navy);font-size:clamp(22px,3vw,30px);letter-spacing:-.04em}
+.stat span{font-size:12px;color:var(--tx2)}
+.activity-columns{display:grid;grid-template-columns:1.2fr .8fr;gap:14px}
+.activity-panel{background:var(--card);border:1px solid #e9edf3;border-radius:20px;padding:20px}
+.activity-panel h3{margin:0 0 16px;color:var(--navy);font-size:17px}
+.activity-bars{height:150px;display:flex;align-items:flex-end;gap:10px;padding-top:10px}
+.activity-bar-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;min-width:0}
+.activity-bar{width:min(100%,34px);min-height:4px;border-radius:7px 7px 3px 3px;background:linear-gradient(180deg,#527db6,#203d62)}
+.activity-bar-wrap small{font-size:10px;color:var(--tx2)}
+.activity-legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:12px;color:var(--tx2);font-size:12px}
+.activity-role{display:flex;gap:8px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.activity-role:last-child{border:0}
+.activity-role .g{flex:1}
+.activity-role strong{color:var(--navy)}
+.activity-history{margin-top:16px}
+.activity-history .card{box-shadow:none;margin-bottom:9px}
+.activity-empty{color:var(--tx2);padding:20px 0;text-align:center}
+#activityCustom{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:10px 0}
+#activityCustom input{max-width:170px;padding:9px}
+@media(max-width:700px){
+ .nav{position:sticky;padding:9px 14px;gap:10px}
+ #tabs{position:fixed;z-index:25;left:0;right:0;bottom:0;top:auto;background:rgba(255,255,255,.94);backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);border-top:1px solid #e4e8ef;padding:8px 7px calc(8px + env(safe-area-inset-bottom,0px));justify-content:space-around;overflow:visible}
+ #tabs button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:7px 3px;font-size:11px;border-radius:10px}
+ main{padding:0 15px calc(94px + env(safe-area-inset-bottom,0px))}
+ .hero{padding:30px 0 22px}
+ .hero h1{font-size:38px}
+ .hero p{font-size:15px}
+ .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .stat{padding:15px}
+ .activity-columns{grid-template-columns:1fr}
+ .activity-head h2{font-size:26px}
+ .periods{width:100%;justify-content:space-between}
+ .periods button{padding:8px 9px}
+}
+@media(min-width:701px){
+ #tabs{position:static}
+ #tabs button{font-size:14px}
+}
+@media(prefers-color-scheme:dark){
+ .hero h1,.route,.activity-head h2,.stat strong,.activity-panel h3,.activity-role strong{color:var(--tx)}
+ .panel,.card,.stat,.activity-panel{border-color:var(--line)}
+ .periods{background:var(--fill)}
+ .periods button.on{background:var(--card);color:var(--tx)}
+ #tabs button.on{background:var(--fill);color:var(--tx)}
+}
+@media(max-width:700px){#tabs{background:rgba(255,255,255,.94)}}
+
 .brand{display:flex;align-items:center;gap:8px}
 .lg{display:inline-block;width:28px;height:28px;flex:none}
 .lg img{width:100%;height:100%;object-fit:contain;display:block}
@@ -194,7 +268,16 @@ b.bump{display:inline-block;animation:bump .5s ease}
 <div class="acts"><button class="btn" id="pub">Publicar viaje</button></div></div>
 <h2>Mis viajes</h2><div id="mine"></div></section>
 
-<section id="v-mensajes" hidden><h2 style="margin-top:0">Mensajes</h2><div class="panel" id="msgs"></div></section>
+<section id="v-actividad" hidden>
+ <div class="activity-head"><div><div class="meta">Tu recorrido en Holpin</div><h2>Mi actividad</h2></div>
+ <div class="periods" id="activityPeriods"><button data-period="week">Semana</button><button data-period="month" class="on">Mes</button><button data-period="year">Año</button><button data-period="custom">Personalizado</button></div></div>
+ <div id="activityCustom" hidden><label>Desde <input type="date" id="activityFrom"></label><label>Hasta <input type="date" id="activityTo"></label></div>
+ <div class="stats-grid" id="activityStats"></div>
+ <div class="activity-columns"><div class="activity-panel"><h3>Tu actividad en el período</h3><div class="activity-bars" id="activityChart"></div><div class="activity-legend"><span>Viajes completados</span></div></div>
+ <div class="activity-panel"><h3>Tu balance</h3><div id="activityRoles"></div></div></div>
+ <div class="activity-history"><h3>Historial de viajes</h3><div id="activityHistory"></div></div>
+ </section>
+ <section id="v-mensajes" hidden><h2 style="margin-top:0">Mensajes</h2><div class="panel" id="msgs"></div></section>
 <div class="meta" style="text-align:center;padding:0 0 28px;font-size:12px">Holpin · versión 1.1</div>
 </main>
 <datalist id="cities"><option>Buenos Aires</option><option>Córdoba</option><option>Rosario</option><option>Mendoza</option><option>La Plata</option><option>Mar del Plata</option><option>Tucumán</option><option>Salta</option><option>Santa Fe</option><option>Neuquén</option><option>Bariloche</option><option>Paraná</option><option>Posadas</option><option>Corrientes</option><option>San Luis</option><option>Bahía Blanca</option></datalist>
@@ -278,6 +361,7 @@ async function load(){
  return true;
 }
 const seen=new Set(),lastLeft=new Map();
+ let activityPeriod='month';
 function ratingSummary(driverId){
  const a=tripRatings.filter(x=>x.driverId===driverId);
  if(!a.length)return '<span class="meta">Sin calificaciones</span>';
@@ -430,11 +514,49 @@ function renderTabs(){
  const un=msgs.filter(m=>m.toId===uid&&!m.read).length;
  document.title=(un?'('+un+') ':'')+'Holpin — Coordiná tus viajes';
  $('#bell').hidden=!(uid&&'Notification' in window&&Notification.permission!=='denied'&&!pushOn);
- const tabs=[['buscar','Viajes']].concat(role==='conductor'?[['publicar','Publicar']]:[],[['mensajes','Mensajes']]);
+ const tabs=[['buscar','Viajes'],['actividad','Actividad']].concat(role==='conductor'?[['publicar','Publicar']]:[],[['mensajes','Mensajes']]);
  $('#tabs').innerHTML=tabs.map(([k,l])=>`<button data-v="${k}" class="${view===k?'on':''}">${l}${k==='mensajes'&&un?`<span class="dot">${un}</span>`:''}</button>`).join('');
  $('#meBtn').innerHTML=meP()?`<img class="av" src="${esc(who(uid).photo)}" alt="">`:'<span class="btn sec sm">Entrar</span>'}
-const renderAll=()=>{renderList();renderMsgs()};
-function show(v){view=v;$('#roleSeg').hidden=v==='mensajes';$('#hero').hidden=v==='mensajes';requestAnimationFrame(()=>requestAnimationFrame(movePill));['buscar','publicar','mensajes'].forEach(k=>$('#v-'+k).hidden=k!==v);
+const renderAll=()=>{renderList();renderMsgs();renderActivity()};
+function activityRange(){
+ const now=new Date(),start=new Date(now);
+ if(activityPeriod==='week'){const day=(now.getDay()+6)%7;start.setDate(now.getDate()-day);start.setHours(0,0,0,0)}
+ else if(activityPeriod==='month'){start.setDate(1);start.setHours(0,0,0,0)}
+ else if(activityPeriod==='year'){start.setMonth(0,1);start.setHours(0,0,0,0)}
+ else {const f=$('#activityFrom')?.value,t=$('#activityTo')?.value;return{start:f?new Date(f+'T00:00:00'):new Date(0),end:t?new Date(t+'T23:59:59'):new Date(8640000000000000)}}
+ return{start,end:new Date(8640000000000000)};
+}
+function renderActivity(){
+ if(!uid||!$('#activityStats'))return;
+ const range=activityRange(),inRange=t=>t.completedAt&&new Date(t.completedAt)>=range.start&&new Date(t.completedAt)<=range.end;
+ const driven=trips.filter(t=>t.driverId===uid&&inRange(t));
+ const passengerReq=tripRequests.filter(r=>r.passengerId===uid&&r.status==='accepted').map(r=>trips.find(t=>t.id===r.tripId)).filter(t=>t&&inRange(t));
+ const passengerUnique=[...new Map(passengerReq.map(t=>[t.id,t])).values()];
+ const total=driven.length+passengerUnique.length;
+ const driverIncome=driven.reduce((sum,t)=>sum+t.price*tripRequests.filter(r=>r.tripId===t.id&&r.status==='accepted').length,0);
+ const passengerSpend=passengerUnique.reduce((sum,t)=>sum+t.price,0);
+ const moneyFmt=n=>'$ '+Math.round(n).toLocaleString('es-AR');
+ $('#activityStats').innerHTML=[
+  ['Viajes realizados',total,'Como conductor y pasajero'],
+  ['Como conductor',driven.length,'Viajes finalizados'],
+  ['Como pasajero',passengerUnique.length,'Viajes finalizados'],
+  ['Balance registrado',moneyFmt(driverIncome-passengerSpend),'Ingresos estimados menos gastos']
+ ].map(x=>'<div class="stat"><small>'+x[0]+'</small><strong>'+x[1]+'</strong><span>'+x[2]+'</span></div>').join('');
+ const buckets=Array.from({length:6},(_,i)=>({label:'',count:0,date:new Date(range.start)}));
+ const chartEnd=new Date();buckets.forEach((b,i)=>{const d=new Date(chartEnd);d.setMonth(d.getMonth()-(5-i));d.setDate(1);b.date=d;b.label=d.toLocaleDateString('es-AR',{month:'short'});});
+ const completed=[...driven,...passengerUnique];
+ buckets.forEach(b=>b.count=completed.filter(t=>{const d=new Date(t.completedAt);return d.getMonth()===b.date.getMonth()&&d.getFullYear()===b.date.getFullYear()}).length);
+ const max=Math.max(1,...buckets.map(b=>b.count));
+ $('#activityChart').innerHTML=buckets.map(b=>'<div class="activity-bar-wrap"><div class="activity-bar" title="'+b.count+' viajes" style="height:'+Math.max(4,b.count/max*112)+'px"></div><small>'+b.label+'</small></div>').join('');
+ $('#activityRoles').innerHTML='<div class="activity-role"><div class="g"><strong>Conductor</strong><div class="meta">'+driven.length+' viajes · ingresos estimados</div></div><b>'+moneyFmt(driverIncome)+'</b></div><div class="activity-role"><div class="g"><strong>Pasajero</strong><div class="meta">'+passengerUnique.length+' viajes · gastos estimados</div></div><b>'+moneyFmt(passengerSpend)+'</b></div>';
+ const history=[...driven.map(t=>({...t,_role:'Conductor'})),...passengerUnique.map(t=>({...t,_role:'Pasajero'}))].sort((a,b)=>new Date(b.completedAt)-new Date(a.completedAt));
+ $('#activityHistory').innerHTML=history.length?history.map(t=>'<article class="card"><div class="meta">'+t._role+' · '+new Date(t.completedAt).toLocaleDateString('es-AR')+'</div><div class="route">'+esc(t.from)+' <i>→</i> '+esc(t.to)+'</div><div class="meta">'+moneyFmt(t.price)+' por persona</div></article>').join(''):'<div class="activity-empty">Todavía no hay viajes finalizados en este período.</div>';
+ document.querySelectorAll('#activityPeriods button').forEach(b=>b.classList.toggle('on',b.dataset.period===activityPeriod));
+ $('#activityCustom').hidden=activityPeriod!=='custom';
+}
+$('#activityPeriods').onclick=e=>{const b=e.target.closest('[data-period]');if(!b)return;activityPeriod=b.dataset.period;renderActivity()};
+['#activityFrom','#activityTo'].forEach(id=>$(id).addEventListener('change',renderActivity));
+function show(v){view=v;$('#roleSeg').hidden=v==='mensajes';$('#hero').hidden=v==='mensajes';requestAnimationFrame(()=>requestAnimationFrame(movePill));['buscar','publicar','actividad','mensajes'].forEach(k=>$('#v-'+k).hidden=k!==v);
   renderAll()}
 function setRole(r){role=r;sg.set('holpin_role',r);if(r!=='conductor'&&view==='publicar')view='buscar';
  document.querySelectorAll('#roleSeg button').forEach(b=>b.classList.toggle('on',b.dataset.r===r));show(view)}
