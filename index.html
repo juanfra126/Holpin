@@ -637,37 +637,37 @@ button,a,label{-webkit-tap-highlight-color:transparent;touch-action:manipulation
 .public-trip small{color:var(--tx2);font-size:11px;margin-top:4px}
 @media(max-width:480px){.public-cover{height:118px}.public-avatar{width:72px;height:72px}.public-name h3{font-size:19px}.public-stats{gap:5px}.public-stats>div{padding:10px 4px}.public-stats span{font-size:9px}}
 
-/* Ajuste final: Liquid Glass tintado del navegador móvil, sin desenfoque */
+/* Liquid Glass móvil: apenas teñido, muy transparente y sin blur */
 @media(max-width:700px){
  #tabs{
-  background:linear-gradient(125deg,rgba(255,255,255,.58),rgba(221,234,250,.34) 55%,rgba(229,218,245,.26))!important;
-  border:1px solid rgba(255,255,255,.72)!important;
-  border-top:1px solid rgba(255,255,255,.82)!important;
-  box-shadow:0 9px 28px rgba(30,54,86,.10),inset 0 1px 0 rgba(255,255,255,.78)!important;
+  background:linear-gradient(125deg,rgba(255,255,255,.24),rgba(221,234,250,.13) 55%,rgba(229,218,245,.10))!important;
+  border:1px solid rgba(255,255,255,.48)!important;
+  border-top:1px solid rgba(255,255,255,.58)!important;
+  box-shadow:0 7px 22px rgba(30,54,86,.07),inset 0 1px 0 rgba(255,255,255,.52)!important;
   -webkit-backdrop-filter:none!important;
   backdrop-filter:none!important;
  }
  #tabs .tab-lens{
   -webkit-backdrop-filter:none!important;
   backdrop-filter:none!important;
-  background:linear-gradient(135deg,rgba(255,255,255,.64),rgba(192,215,244,.42) 55%,rgba(213,194,237,.32))!important;
-  border-color:rgba(255,255,255,.78)!important;
+  background:linear-gradient(135deg,rgba(255,255,255,.28),rgba(192,215,244,.17) 55%,rgba(213,194,237,.13))!important;
+  border-color:rgba(255,255,255,.54)!important;
  }
 }
 @media(max-width:700px) and (prefers-color-scheme:dark){
  #tabs{
-  background:linear-gradient(125deg,rgba(45,58,78,.58),rgba(55,76,105,.42) 55%,rgba(77,62,99,.34))!important;
-  border-color:rgba(255,255,255,.19)!important;
-  border-top-color:rgba(255,255,255,.24)!important;
-  box-shadow:0 9px 28px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.18)!important;
+  background:linear-gradient(125deg,rgba(45,58,78,.22),rgba(55,76,105,.15) 55%,rgba(77,62,99,.12))!important;
+  border-color:rgba(255,255,255,.15)!important;
+  border-top-color:rgba(255,255,255,.19)!important;
+  box-shadow:0 7px 22px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.12)!important;
  }
  #tabs .tab-lens{
-  background:linear-gradient(135deg,rgba(128,157,194,.34),rgba(105,140,185,.25) 55%,rgba(150,119,180,.22))!important;
-  border-color:rgba(255,255,255,.22)!important;
+  background:linear-gradient(135deg,rgba(128,157,194,.16),rgba(105,140,185,.12) 55%,rgba(150,119,180,.10))!important;
+  border-color:rgba(255,255,255,.17)!important;
  }
 }
-:root[data-theme="dark"] #tabs{background:linear-gradient(125deg,rgba(45,58,78,.58),rgba(55,76,105,.42) 55%,rgba(77,62,99,.34))!important;border-color:rgba(255,255,255,.19)!important;box-shadow:0 9px 28px rgba(0,0,0,.22),inset 0 1px 0 rgba(255,255,255,.18)!important}
-:root[data-theme="dark"] #tabs .tab-lens{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;background:linear-gradient(135deg,rgba(128,157,194,.34),rgba(105,140,185,.25) 55%,rgba(150,119,180,.22))!important;border-color:rgba(255,255,255,.22)!important}
+:root[data-theme="dark"] #tabs{background:linear-gradient(125deg,rgba(45,58,78,.22),rgba(55,76,105,.15) 55%,rgba(77,62,99,.12))!important;border-color:rgba(255,255,255,.15)!important;box-shadow:0 7px 22px rgba(0,0,0,.16),inset 0 1px 0 rgba(255,255,255,.12)!important}
+:root[data-theme="dark"] #tabs .tab-lens{-webkit-backdrop-filter:none!important;backdrop-filter:none!important;background:linear-gradient(135deg,rgba(128,157,194,.16),rgba(105,140,185,.12) 55%,rgba(150,119,180,.10))!important;border-color:rgba(255,255,255,.17)!important}
 </style></head><body>
 <header class="nav"><div class="brand"><span class="lg"><img class="lg-l" src="logo-negro.png" alt="" width="64" height="64"><img class="lg-d" src="logo-blanco.png" alt="" width="64" height="64"></span><b>Holpin</b></div><nav id="tabs"></nav><button class="btn sec sm" id="bell" title="Activar avisos de mensajes nuevos" aria-label="Activar avisos" hidden>🔔</button><button class="avbtn" id="meBtn" aria-label="Perfil"></button></header>
 <main>
