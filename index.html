@@ -337,6 +337,104 @@ input,textarea{background:#f6f7fa;border-color:#edf0f4;border-radius:12px}
 :root[data-theme="dark"] .periods{background:var(--fill)!important}
 :root[data-theme="dark"] .periods button.on{background:var(--card)!important;color:var(--tx)!important}
 
+
+/* ---- Holpin mobile: acabado redondeado y transiciones ---- */
+@keyframes holpinViewIn{
+  from{opacity:0;transform:translate3d(18px,8px,0) scale(.985);filter:blur(2px)}
+  to{opacity:1;transform:translate3d(0,0,0) scale(1);filter:blur(0)}
+}
+@keyframes holpinTabIn{
+  from{opacity:.65;transform:translateY(5px) scale(.96)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+@media(max-width:700px){
+  .nav{
+    margin:8px 10px 0!important;
+    width:calc(100% - 20px)!important;
+    border:1px solid var(--line)!important;
+    border-radius:24px!important;
+    padding:9px 13px!important;
+    background:var(--glass)!important;
+    box-shadow:0 8px 28px rgba(0,0,0,.07);
+  }
+  .nav .brand{gap:7px}
+  .nav .brand b{font-size:19px}
+  #tabs{
+    position:fixed!important;
+    inset:auto 12px calc(10px + env(safe-area-inset-bottom,0px)) 12px!important;
+    width:auto!important;
+    min-height:68px!important;
+    padding:7px!important;
+    display:flex!important;
+    align-items:stretch!important;
+    justify-content:space-around!important;
+    gap:4px!important;
+    overflow:visible!important;
+    border:1px solid var(--line)!important;
+    border-radius:26px!important;
+    background:var(--glass)!important;
+    box-shadow:0 12px 38px rgba(0,0,0,.18),inset 0 1px 0 rgba(255,255,255,.24);
+    backdrop-filter:saturate(180%) blur(24px)!important;
+    -webkit-backdrop-filter:saturate(180%) blur(24px)!important;
+  }
+  #tabs button{
+    flex:1 1 0!important;
+    min-width:0!important;
+    min-height:50px!important;
+    padding:7px 3px!important;
+    border-radius:19px!important;
+    color:var(--tx2)!important;
+    font-size:11px!important;
+    font-weight:600!important;
+    white-space:normal!important;
+    -webkit-tap-highlight-color:transparent;
+  }
+  #tabs button.on{
+    color:#fff!important;
+    background:var(--blue)!important;
+    box-shadow:0 4px 12px rgba(0,113,227,.25);
+    animation:holpinTabIn .28s cubic-bezier(.2,.8,.2,1) both;
+  }
+  #tabs button:active{transform:scale(.94)}
+  main{padding-left:13px!important;padding-right:13px!important;padding-bottom:calc(108px + env(safe-area-inset-bottom,0px))!important}
+  .panel,.card,.activity-panel,.stat{
+    border-radius:25px!important;
+  }
+  .panel{padding:18px!important}
+  .card{padding:18px!important}
+  .activity-panel{padding:18px!important}
+  .stat{padding:15px!important}
+  .btn{border-radius:16px!important;min-height:42px}
+  input,textarea{border-radius:16px!important}
+  .seg{border-radius:22px!important}
+  .seg button{border-radius:19px!important}
+  .sheet{border-radius:30px!important}
+  section[id^="v-"]:not([hidden]){
+    animation:holpinViewIn .42s cubic-bezier(.2,.8,.2,1) both!important;
+    transform-origin:center top;
+  }
+  .hero{padding-top:26px}
+  .hero .lg{width:76px;height:76px}
+  .hero .install-help{margin-top:15px}
+}
+.install-help{
+  display:inline-flex;align-items:center;gap:8px;
+  margin-top:14px;padding:10px 16px;
+  border:1px solid var(--line);border-radius:999px;
+  color:var(--blue);background:var(--card);
+  font:inherit;font-size:14px;font-weight:650;cursor:pointer;
+  box-shadow:0 3px 12px rgba(0,0,0,.05);
+  transition:transform .2s,box-shadow .2s,background .2s;
+}
+.install-help:active{transform:scale(.96)}
+.install-steps{margin:14px 0 0;padding-left:22px;color:var(--tx);line-height:1.65}
+.install-steps li{padding:5px 0}
+.install-device{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.install-device .btn{flex:1;min-width:130px}
+@media(prefers-reduced-motion:reduce){
+  section[id^="v-"]:not([hidden]),#tabs button.on{animation:none!important}
+}
+
 </style></head><body>
 <header class="nav"><div class="brand"><span class="lg"><img class="lg-l" src="logo-negro.png" alt="" width="64" height="64"><img class="lg-d" src="logo-blanco.png" alt="" width="64" height="64"></span><b>Holpin</b></div><nav id="tabs"></nav><button class="btn sec sm" id="bell" title="Activar avisos de mensajes nuevos" aria-label="Activar avisos" hidden>🔔</button><button class="avbtn" id="meBtn" aria-label="Perfil"></button></header>
 <main>
@@ -390,6 +488,25 @@ const sg={get(k,d){try{return localStorage.getItem(k)||d}catch(e){return d}},set
 function toast(t){const e=$('#toast');e.textContent=t;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),t.length>60?6500:2800)}
 function sheet(h,lock){$('#sheet').innerHTML=h;$('#ov').hidden=false;$('#ov').dataset.lock=lock?1:''}
 function close(){$('#ov').hidden=true}
+
+function installHelp(){
+ sheet('<h3>Tené Holpin siempre a mano</h3><p>¿Qué celular utilizás?</p><div class="install-device"><button class="btn sec" id="installIphone">iPhone (iOS)</button><button class="btn sec" id="installSamsung">Samsung (Android)</button></div><div class="acts"><button class="btn sec" id="installClose">Cerrar</button></div>');
+ $('#installIphone').onclick=()=>installSteps('iphone');
+ $('#installSamsung').onclick=()=>installSteps('samsung');
+ $('#installClose').onclick=close;
+}
+function installSteps(device){
+ const iphone=device==='iphone';
+ const title=iphone?'Cómo agregar Holpin en iPhone':'Cómo agregar Holpin en Samsung';
+ const steps=iphone
+  ?['Abrí Holpin desde Safari (no desde Chrome ni otro navegador).','Tocá el botón Compartir (el cuadrado con la flecha hacia arriba).','Deslizá las opciones y elegí “Agregar a pantalla de inicio”.','Si aparece la opción “Abrir como app”, activala.','Tocá “Agregar”. ¡Listo! Vas a encontrar Holpin junto a tus aplicaciones.']
+  :['Abrí Holpin desde Google Chrome.','Tocá los tres puntitos ⋮ de la esquina superior.','Elegí “Instalar aplicación” o “Agregar a pantalla de inicio”.','Confirmá tocando “Instalar” o “Agregar”.','¡Listo! El ícono de Holpin aparecerá junto a tus aplicaciones.'];
+ sheet('<h3>'+title+'</h3><ol class="install-steps">'+steps.map(x=>'<li>'+x+'</li>').join('')+'</ol><div class="acts"><button class="btn sec" id="installBack">Volver</button><button class="btn" id="installDone">¡Entendido!</button></div>');
+ $('#installBack').onclick=installHelp;
+ $('#installDone').onclick=close;
+}
+$('#installHelp').onclick=installHelp;
+
 $('#ov').onclick=e=>{if(e.target.id==='ov'&&!$('#ov').dataset.lock)close()};
 
 let sb=null;try{if(window.supabase&&/^https:\/\//.test(SUPABASE_URL)&&SUPABASE_ANON_KEY.length>20)sb=supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storage:window.localStorage}})}catch(e){sb=null}
