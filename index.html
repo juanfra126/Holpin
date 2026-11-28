@@ -867,7 +867,29 @@ button,a,label{-webkit-tap-highlight-color:transparent;touch-action:manipulation
 @keyframes holpinRefreshSpin{to{transform:rotate(360deg)}}
 @media(prefers-reduced-motion:reduce){.pull-refresh-indicator,.pull-refresh-indicator.pull-loading .pull-refresh-spinner{transition:none;animation:none}}
 @media(max-width:700px){.hero .install-help{margin-top:4px!important;transform:translateY(-4px)}}
+
+/* Pantalla de inicio: identidad visual mientras Holpin termina de cargar */
+#holpinStartupSplash{position:fixed;inset:0;z-index:200000;display:grid;place-items:center;padding:24px;background:var(--bg);color:var(--tx);opacity:1;visibility:visible;transition:opacity .32s ease,visibility .32s ease}
+#holpinStartupSplash.is-leaving{opacity:0;visibility:hidden;pointer-events:none}
+.startup-brand{display:flex;flex-direction:column;align-items:center;gap:17px;text-align:center}
+.startup-logo{width:clamp(94px,24vw,126px);height:clamp(94px,24vw,126px);object-fit:contain;display:block;animation:startupLogoIn .7s cubic-bezier(.2,.8,.2,1) both}
+.startup-wordmark{font-size:25px;font-weight:750;letter-spacing:-.045em;margin-top:-8px}
+.startup-caption{font-size:13px;color:var(--tx2);letter-spacing:.015em}
+.startup-loader{width:34px;height:3px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:3px}
+.startup-loader::after{content:"";display:block;width:45%;height:100%;border-radius:inherit;background:var(--blue);animation:startupLoading 1.15s ease-in-out infinite}
+@keyframes startupLogoIn{from{opacity:0;transform:translateY(8px) scale(.92)}to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes startupLoading{0%{transform:translateX(-110%)}100%{transform:translateX(250%)}}
+@media(prefers-reduced-motion:reduce){#holpinStartupSplash{transition:none}.startup-logo{animation:none}.startup-loader::after{animation:none;width:100%;opacity:.65}}
 </style></head><body>
+<div id="holpinStartupSplash" role="status" aria-label="Holpin se está preparando">
+ <div class="startup-brand">
+  <picture><source srcset="logo-blanco.png" media="(prefers-color-scheme: dark)"><img class="startup-logo" src="logo-negro.png" alt="Holpin"></picture>
+  <div class="startup-wordmark">Holpin</div>
+  <div class="startup-caption">Preparando tu experiencia…</div>
+  <span class="startup-loader" aria-hidden="true"></span>
+ </div>
+</div>
+
 <header class="nav"><div class="brand"><span class="lg"><img class="lg-l" src="logo-negro.png" alt="" width="64" height="64"><img class="lg-d" src="logo-blanco.png" alt="" width="64" height="64"></span><b>Holpin</b></div><nav id="tabs"></nav><button class="btn sec sm" id="bell" title="Activar avisos de mensajes nuevos" aria-label="Activar avisos" hidden>🔔</button><button class="avbtn" id="meBtn" aria-label="Perfil"></button></header>
 <div id="pullRefreshIndicator" class="pull-refresh-indicator" aria-live="polite"><span class="pull-refresh-spinner"></span><span id="pullRefreshText">Soltá para actualizar</span></div>
 <main>
@@ -1030,7 +1052,7 @@ const need=()=>{if(!uid){authSheet();return false}if(!profilesLoaded){toast('Est
 const capacitySessionId=(()=>{let id=localStorage.getItem('holpin_capacity_session');if(!id){id=window.crypto&&crypto.randomUUID?crypto.randomUUID():('xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const v=Math.random()*16|0;return(c==='x'?v:(v&3|8)).toString(16)}));localStorage.setItem('holpin_capacity_session',id)}return id})();
 let capacityAdmitted=false,capacityChecking=false,capacityRpcReady=false,capacityWaitTimer=null,capacityHeartbeatTimer=null,capacityChannel=null,capacityGameTimer=null,capacityGameScore=0,capacityGamePlaying=false,capacityGameSeconds=20;
 function stopCapacityTimers(){if(capacityWaitTimer){clearInterval(capacityWaitTimer);capacityWaitTimer=null}if(capacityHeartbeatTimer){clearInterval(capacityHeartbeatTimer);capacityHeartbeatTimer=null}}
-function showCapacityScreen(activeCount){const el=$('#capacityScreen');if(!el)return;el.hidden=false;$('#capacityStatus').textContent=activeCount?activeCount+' personas están usando Holpin ahora. Te avisaremos cuando haya lugar.':'Estamos buscando un lugar para vos…';if(!capacityWaitTimer)capacityWaitTimer=setInterval(()=>checkHolpinCapacity(false),12000)}
+function showCapacityScreen(activeCount){hideStartupSplash();const el=$('#capacityScreen');if(!el)return;el.hidden=false;$('#capacityStatus').textContent=activeCount?activeCount+' personas están usando Holpin ahora. Te avisaremos cuando haya lugar.':'Estamos buscando un lugar para vos…';if(!capacityWaitTimer)capacityWaitTimer=setInterval(()=>checkHolpinCapacity(false),12000)}
 function hideCapacityScreen(){const el=$('#capacityScreen');if(el)el.hidden=true;if(capacityWaitTimer){clearInterval(capacityWaitTimer);capacityWaitTimer=null}}
 function startCapacityHeartbeat(){if(!capacityRpcReady)return;if(capacityHeartbeatTimer)clearInterval(capacityHeartbeatTimer);capacityHeartbeatTimer=setInterval(async()=>{if(!uid||!capacityAdmitted)return;const {data,error}=await sb.rpc('holpin_capacity_admit',{p_session_id:capacitySessionId});if(error){console.warn('Se pausó la renovación del cupo:',error.message);clearInterval(capacityHeartbeatTimer);capacityHeartbeatTimer=null;capacityRpcReady=false;return}if(data&&!data.allowed){capacityAdmitted=false;stopCapacityTimers();if(capacityChannel){sb.removeChannel(capacityChannel);capacityChannel=null}showCapacityScreen(data.active_count)}},25000)}
 function startHolpinRealtime(){if(capacityChannel||!sb||!capacityAdmitted)return;capacityChannel=sb.channel('holpin').on('postgres_changes',{event:'*',schema:'public'},p=>{if(p.table==='messages'&&p.eventType==='INSERT'&&p.new&&uid&&p.new.to_id===uid)notify(p.new);load()}).subscribe()}
@@ -1039,6 +1061,14 @@ async function checkHolpinCapacity(initial){if(!sb||!uid||capacityChecking)retur
  else{capacityAdmitted=false;if(capacityHeartbeatTimer){clearInterval(capacityHeartbeatTimer);capacityHeartbeatTimer=null}if(capacityChannel){sb.removeChannel(capacityChannel);capacityChannel=null}showCapacityScreen(data&&data.active_count||0)}
  }catch(e){console.error('Error comprobando capacidad:',e);if(initial){capacityAdmitted=true;hideCapacityScreen();const loaded=await load();startHolpinRealtime();if(loaded&&profilesLoaded&&!meP()&&$('#ov').hidden)profile(true)}}finally{capacityChecking=false}}
 function initCapacityGame(){const start=$('#capacityGameStart'),target=$('#capacityTarget'),field=$('#capacityGameField');if(!start||start.dataset.ready)return;start.dataset.ready='1';const move=()=>{const maxX=Math.max(0,field.clientWidth-48),maxY=Math.max(0,field.clientHeight-48);target.style.left=(Math.random()*maxX)+'px';target.style.top=(Math.random()*maxY)+'px'};const finish=()=>{capacityGamePlaying=false;clearInterval(capacityGameTimer);capacityGameTimer=null;target.hidden=true;start.disabled=false;start.textContent='Jugar otra vez';$('#capacityGameInfo').textContent='¡Terminaste! Conseguiste '+capacityGameScore+' puntos.'};start.addEventListener('click',()=>{if(capacityGamePlaying)return;capacityGameScore=0;capacityGameSeconds=20;capacityGamePlaying=true;start.disabled=true;start.textContent='Jugando…';$('#capacityScore').textContent='Puntos: 0';$('#capacityGameInfo').textContent='Tiempo: 20 s';target.hidden=false;move();clearInterval(capacityGameTimer);capacityGameTimer=setInterval(()=>{capacityGameSeconds--;$('#capacityGameInfo').textContent='Tiempo: '+capacityGameSeconds+' s';if(capacityGameSeconds<=0)finish()},1000)});target.addEventListener('click',()=>{if(!capacityGamePlaying)return;capacityGameScore++;$('#capacityScore').textContent='Puntos: '+capacityGameScore;move()})}
+function hideStartupSplash(){
+ const splash=document.getElementById('holpinStartupSplash');
+ if(!splash||splash.dataset.leaving)return;
+ splash.dataset.leaving='1';
+ splash.classList.add('is-leaving');
+ setTimeout(()=>splash.remove(),380);
+}
+
 let loadSeq=0;
 async function load(){
  const my=++loadSeq;
@@ -1056,6 +1086,7 @@ async function load(){
   profilesLoaded=false;
   console.error('No se pudieron cargar los perfiles:',p.error);
   $('#list').innerHTML='<div class="empty">No se pudieron cargar los perfiles. Revisá tu conexión e intentá actualizar.</div>';
+  hideStartupSplash();
   return false;
  }
  profs={};
@@ -1086,6 +1117,7 @@ async function load(){
  }
  ready=true;
  renderAll();
+ hideStartupSplash();
  return true;
 }
 
@@ -1606,7 +1638,7 @@ $('#pub').onclick=async()=>{
  ['#pFrom','#pTo','#pDate','#pTime','#pPrice','#pDescription'].forEach(i=>$(i).value='');toast('Viaje publicado');await load();show('buscar')};
 
 function boot(){
- if(!sb){$('#list').innerHTML='<div class="empty">Falta configurar Supabase: pegá tu URL y tu clave anon entre las comillas, al final del archivo, en el bloque «PASO 1».</div>';return}
+ if(!sb){$('#list').innerHTML='<div class="empty">Falta configurar Supabase: pegá tu URL y tu clave anon entre las comillas, al final del archivo, en el bloque «PASO 1».</div>';hideStartupSplash();return}
  $('#list').innerHTML='<div class="sk"></div><div class="sk"></div><div class="sk"></div>';
  {const q=new URLSearchParams(location.hash.slice(1));
   if(q.get('error_code')||q.get('error_description')){
@@ -1639,5 +1671,6 @@ function movePill(){const seg=document.querySelector('#roleSeg'),b=document.quer
  p.style.width=b.offsetWidth+'px';p.style.transform='translate3d('+b.offsetLeft+'px,0,0)'}
 addEventListener('load',movePill);addEventListener('resize',movePill);addEventListener('resize',moveTabIndicator);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){renderMsgs();if(uid)checkHolpinCapacity(false)}});
+window.addEventListener('load',()=>setTimeout(()=>{if(document.getElementById('holpinStartupSplash'))hideStartupSplash()},12000),{once:true});
 setRole(role);boot();
 </script></body></html>
