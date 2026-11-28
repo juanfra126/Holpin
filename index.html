@@ -880,6 +880,14 @@ button,a,label{-webkit-tap-highlight-color:transparent;touch-action:manipulation
 @keyframes startupLogoIn{from{opacity:0;transform:translateY(8px) scale(.92)}to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes startupLoading{0%{transform:translateX(-110%)}100%{transform:translateX(250%)}}
 @media(prefers-reduced-motion:reduce){#holpinStartupSplash{transition:none}.startup-logo{animation:none}.startup-loader::after{animation:none;width:100%;opacity:.65}}
+
+/* Evita que la tarjeta de viajes haga un pequeño zoom al abrir un perfil */
+@media(max-width:700px){
+ .card:has(.profile-link:active){transform:none!important}
+ .profile-link:active{transform:none!important}
+ body:has(#ov:not([hidden])) .card:active,
+ body:has(#ov:not([hidden])) .panel:active{transform:none!important}
+}
 </style></head><body>
 <div id="holpinStartupSplash" role="status" aria-label="Holpin se está preparando">
  <div class="startup-brand">
