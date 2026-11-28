@@ -1064,10 +1064,10 @@ function showCapacityScreen(activeCount){hideStartupSplash();const el=$('#capaci
 function hideCapacityScreen(){const el=$('#capacityScreen');if(el)el.hidden=true;if(capacityWaitTimer){clearInterval(capacityWaitTimer);capacityWaitTimer=null}}
 function startCapacityHeartbeat(){if(!capacityRpcReady)return;if(capacityHeartbeatTimer)clearInterval(capacityHeartbeatTimer);capacityHeartbeatTimer=setInterval(async()=>{if(!uid||!capacityAdmitted)return;const {data,error}=await sb.rpc('holpin_capacity_admit',{p_session_id:capacitySessionId});if(error){console.warn('Se pausó la renovación del cupo:',error.message);clearInterval(capacityHeartbeatTimer);capacityHeartbeatTimer=null;capacityRpcReady=false;return}if(data&&!data.allowed){capacityAdmitted=false;stopCapacityTimers();if(capacityChannel){sb.removeChannel(capacityChannel);capacityChannel=null}showCapacityScreen(data.active_count)}},25000)}
 function startHolpinRealtime(){if(capacityChannel||!sb||!capacityAdmitted)return;capacityChannel=sb.channel('holpin').on('postgres_changes',{event:'*',schema:'public'},p=>{if(p.table==='messages'&&p.eventType==='INSERT'&&p.new&&uid&&p.new.to_id===uid)notify(p.new);load()}).subscribe()}
-async function checkHolpinCapacity(initial){if(!sb||!uid||capacityChecking)return;capacityChecking=true;try{const {data,error}=await sb.rpc('holpin_capacity_admit',{p_session_id:capacitySessionId});if(error){console.error('No se pudo comprobar el cupo de Holpin. Aplicando acceso de contingencia:',error.message);capacityRpcReady=false;capacityAdmitted=true;hideCapacityScreen();stopCapacityTimers();startCapacityHeartbeat();const loaded=await load();startHolpinRealtime();if(loaded&&profilesLoaded&&!meP()&&$('#ov').hidden)profile(true);return}
- if(data&&data.allowed){capacityRpcReady=true;capacityAdmitted=true;hideCapacityScreen();stopCapacityTimers();startCapacityHeartbeat();const loaded=await load();startHolpinRealtime();if(uid&&!pushOn)syncPush(false);if(!$('#ov').hidden&&$('#sheet').querySelector('#aE'))close();if(loaded&&profilesLoaded&&!meP()&&$('#ov').hidden)profile(true)}
+async function checkHolpinCapacity(initial){if(!sb||!uid||capacityChecking)return;capacityChecking=true;try{const {data,error}=await sb.rpc('holpin_capacity_admit',{p_session_id:capacitySessionId});if(error){console.error('No se pudo comprobar el cupo de Holpin. Aplicando acceso de contingencia:',error.message);capacityRpcReady=false;capacityAdmitted=true;hideCapacityScreen();stopCapacityTimers();startCapacityHeartbeat();const loaded=await load();startHolpinRealtime();if(loaded&&profilesLoaded&&!meP()&&$('#ov').hidden)profile(true);else if(loaded&&$('#ov').hidden)setTimeout(showPushLoginPrompt,650);return}
+ if(data&&data.allowed){capacityRpcReady=true;capacityAdmitted=true;hideCapacityScreen();stopCapacityTimers();startCapacityHeartbeat();const loaded=await load();startHolpinRealtime();if(uid&&!pushOn)syncPush(false);if(!$('#ov').hidden&&$('#sheet').querySelector('#aE'))close();if(loaded&&profilesLoaded&&!meP()&&$('#ov').hidden)profile(true);else if(loaded&&$('#ov').hidden)setTimeout(showPushLoginPrompt,650)}
  else{capacityAdmitted=false;if(capacityHeartbeatTimer){clearInterval(capacityHeartbeatTimer);capacityHeartbeatTimer=null}if(capacityChannel){sb.removeChannel(capacityChannel);capacityChannel=null}showCapacityScreen(data&&data.active_count||0)}
- }catch(e){console.error('Error comprobando capacidad:',e);if(initial){capacityAdmitted=true;hideCapacityScreen();const loaded=await load();startHolpinRealtime();if(loaded&&profilesLoaded&&!meP()&&$('#ov').hidden)profile(true)}}finally{capacityChecking=false}}
+ }catch(e){console.error('Error comprobando capacidad:',e);if(initial){capacityAdmitted=true;hideCapacityScreen();const loaded=await load();startHolpinRealtime();if(loaded&&profilesLoaded&&!meP()&&$('#ov').hidden)profile(true);else if(loaded&&$('#ov').hidden)setTimeout(showPushLoginPrompt,650)}}finally{capacityChecking=false}}
 function initCapacityGame(){const start=$('#capacityGameStart'),target=$('#capacityTarget'),field=$('#capacityGameField');if(!start||start.dataset.ready)return;start.dataset.ready='1';const move=()=>{const maxX=Math.max(0,field.clientWidth-48),maxY=Math.max(0,field.clientHeight-48);target.style.left=(Math.random()*maxX)+'px';target.style.top=(Math.random()*maxY)+'px'};const finish=()=>{capacityGamePlaying=false;clearInterval(capacityGameTimer);capacityGameTimer=null;target.hidden=true;start.disabled=false;start.textContent='Jugar otra vez';$('#capacityGameInfo').textContent='¡Terminaste! Conseguiste '+capacityGameScore+' puntos.'};start.addEventListener('click',()=>{if(capacityGamePlaying)return;capacityGameScore=0;capacityGameSeconds=20;capacityGamePlaying=true;start.disabled=true;start.textContent='Jugando…';$('#capacityScore').textContent='Puntos: 0';$('#capacityGameInfo').textContent='Tiempo: 20 s';target.hidden=false;move();clearInterval(capacityGameTimer);capacityGameTimer=setInterval(()=>{capacityGameSeconds--;$('#capacityGameInfo').textContent='Tiempo: '+capacityGameSeconds+' s';if(capacityGameSeconds<=0)finish()},1000)});target.addEventListener('click',()=>{if(!capacityGamePlaying)return;capacityGameScore++;$('#capacityScore').textContent='Puntos: '+capacityGameScore;move()})}
 function hideStartupSplash(){
  const splash=document.getElementById('holpinStartupSplash');
@@ -1369,7 +1369,25 @@ function notify(m){
  }
 }
 const VAPID_PUBLIC='BCYRJr1XqASkhzc56HlDQ2JRvc946dPcK8H5469mRi7ji0YrVI6U3xmz4UtG-syXCac_T4NbWNGCFkRRrWnWMOU';
-let pushOn=false;
+let pushOn=false,pushPromptShownFor=null;
+function showPushLoginPrompt(){
+ if(!uid||pushPromptShownFor===uid||pushOn||!('Notification' in window))return;
+ if(Notification.permission==='granted'){syncPush(false);return}
+ pushPromptShownFor=uid;
+ const denied=Notification.permission==='denied';
+ sheet(`<div style="text-align:center;padding:8px 2px">
+  <div style="font-size:38px;margin-bottom:8px">🔔</div>
+  <h3 style="margin:0 0 8px">Activá las notificaciones</h3>
+  <p style="margin:0 0 16px">${denied?'Las notificaciones están bloqueadas en tu navegador. Habilitalas desde los ajustes del sitio para recibir mensajes aunque no tengas Holpin abierto.':'No te pierdas ningún mensaje. Activá los avisos para recibir notificaciones cuando alguien te escriba, incluso si no estás usando Holpin.'}</p>
+  <div class="acts" style="justify-content:center">
+   ${denied?'<button class="btn" id="pushPromptHelp">Cómo habilitarlas</button>':'<button class="btn" id="pushPromptEnable">Activar notificaciones</button>'}
+   <button class="btn sec" id="pushPromptLater">Ahora no</button>
+  </div>
+ </div>`);
+ const later=$('#pushPromptLater');if(later)later.onclick=close;
+ const enable=$('#pushPromptEnable');if(enable)enable.onclick=async()=>{enable.disabled=true;enable.textContent='Activando…';const ok=await syncPush(true);if(ok){close();toast('¡Notificaciones activadas!')}else{enable.disabled=false;enable.textContent='Intentar de nuevo'}};
+ const help=$('#pushPromptHelp');if(help)help.onclick=()=>{close();toast('Abrí los ajustes del navegador, buscá Permisos del sitio y permití las notificaciones para Holpin.')};
+}
 const u8=b=>{const s=atob((b+'='.repeat((4-b.length%4)%4)).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from([...s].map(c=>c.charCodeAt(0)))};
 async function syncPush(ask){
  try{
