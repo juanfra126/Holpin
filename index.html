@@ -847,8 +847,29 @@ button,a,label{-webkit-tap-highlight-color:transparent;touch-action:manipulation
   50%{box-shadow:0 9px 25px rgba(67,91,235,.39),inset 0 1px 0 rgba(255,255,255,.34)}
 }
 @media(prefers-reduced-motion:reduce){.hero .install-help{animation:none!important}}
+
+/* Gesto pull-to-refresh para Holpin instalado en pantalla de inicio */
+.pull-refresh-indicator{
+ position:fixed;z-index:100001;top:calc(env(safe-area-inset-top,0px) + 8px);left:50%;
+ display:flex;align-items:center;gap:9px;padding:10px 16px;
+ border:1px solid var(--line);border-radius:999px;
+ color:var(--tx);background:color-mix(in srgb,var(--card) 88%,transparent);
+ box-shadow:0 8px 24px rgba(0,0,0,.14);
+ -webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
+ font-size:12px;font-weight:650;white-space:nowrap;pointer-events:none;
+ opacity:0;transform:translate(-50%,-75px);transition:opacity .18s,transform .2s;
+}
+.pull-refresh-indicator.pull-visible{
+ opacity:1;transform:translate(-50%,var(--pull-distance,0px));
+}
+.pull-refresh-spinner{width:15px;height:15px;border:2px solid var(--line);border-top-color:var(--blue);border-radius:50%;flex:none}
+.pull-refresh-indicator.pull-loading .pull-refresh-spinner{animation:holpinRefreshSpin .7s linear infinite}
+@keyframes holpinRefreshSpin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.pull-refresh-indicator,.pull-refresh-indicator.pull-loading .pull-refresh-spinner{transition:none;animation:none}}
+@media(max-width:700px){.hero .install-help{margin-top:4px!important;transform:translateY(-4px)}}
 </style></head><body>
 <header class="nav"><div class="brand"><span class="lg"><img class="lg-l" src="logo-negro.png" alt="" width="64" height="64"><img class="lg-d" src="logo-blanco.png" alt="" width="64" height="64"></span><b>Holpin</b></div><nav id="tabs"></nav><button class="btn sec sm" id="bell" title="Activar avisos de mensajes nuevos" aria-label="Activar avisos" hidden>🔔</button><button class="avbtn" id="meBtn" aria-label="Perfil"></button></header>
+<div id="pullRefreshIndicator" class="pull-refresh-indicator" aria-live="polite"><span class="pull-refresh-spinner"></span><span id="pullRefreshText">Soltá para actualizar</span></div>
 <main>
 <section class="hero" id="hero"><span class="lg"><img class="lg-l" src="logo-negro.png" alt="" width="64" height="64"><img class="lg-d" src="logo-blanco.png" alt="" width="64" height="64"></span><h1>Viajá acompañado.</h1><p>Encontrá un lugar en un auto o publicá tu viaje entre ciudades y repartí los gastos.</p><button type="button" class="install-help" id="installHelp">＋ Agregar Holpin a la pantalla de inicio</button>
 <div class="seg" id="roleSeg"><span class="pill"></span><button data-r="pasajero">Soy pasajero</button><button data-r="conductor">Soy conductor</button></div><p class="role-hint" id="roleHint">Buscá un lugar en un viaje o publicá un pedido si necesitás llegar a algún destino.</p></section>
@@ -1067,6 +1088,52 @@ async function load(){
  renderAll();
  return true;
 }
+
+/* Actualización por gesto de arrastrar hacia abajo, como en una app nativa */
+(()=>{
+ const standalone=()=>navigator.standalone===true||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches);
+ const indicator=$('#pullRefreshIndicator'),label=$('#pullRefreshText');
+ if(!indicator||!label)return;
+ let startY=0,pulling=false,refreshing=false,distance=0;
+ const hide=()=>{indicator.classList.remove('pull-visible','pull-loading');indicator.style.setProperty('--pull-distance','0px');};
+ const refresh=async()=>{
+  if(refreshing)return;
+  refreshing=true;indicator.classList.add('pull-loading','pull-visible');label.textContent='Actualizando Holpin…';
+  try{
+   await load();
+   label.textContent='¡Holpin está actualizado!';
+  }catch(e){
+   console.error('No se pudo actualizar Holpin:',e);
+   label.textContent='No se pudo actualizar. Revisá tu conexión.';
+  }
+  setTimeout(()=>{refreshing=false;hide();},850);
+ };
+ document.addEventListener('touchstart',e=>{
+  if(!standalone()||refreshing||!capacityAdmitted&&uid||!$('#ov').hidden||e.touches.length!==1||window.scrollY>1)return;
+  const target=e.target;
+  if(target.closest('input,textarea,select,button,[contenteditable="true"],.sheet,.capacity-screen'))return;
+  startY=e.touches[0].clientY;distance=0;pulling=true;
+ },{passive:true});
+ document.addEventListener('touchmove',e=>{
+  if(!pulling||refreshing||e.touches.length!==1)return;
+  const delta=e.touches[0].clientY-startY;
+  if(delta<=0){distance=0;hide();return}
+  distance=Math.min(delta*.55,112);
+  indicator.style.setProperty('--pull-distance',distance+'px');
+  indicator.classList.add('pull-visible');
+  label.textContent=distance>=78?'Soltá para actualizar':'Deslizá para actualizar';
+  if(delta>8&&e.cancelable)e.preventDefault();
+ },{passive:false});
+ const finish=()=>{
+  if(!pulling)return;
+  pulling=false;
+  if(distance>=78)refresh();
+  else hide();
+ };
+ document.addEventListener('touchend',finish,{passive:true});
+ document.addEventListener('touchcancel',()=>{pulling=false;if(!refreshing)hide();},{passive:true});
+})();
+
 const seen=new Set(),lastLeft=new Map();
  let activityPeriod='month';
 function ratingSummary(driverId){
