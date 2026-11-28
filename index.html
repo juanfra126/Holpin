@@ -787,6 +787,28 @@ button,a,label{-webkit-tap-highlight-color:transparent;touch-action:manipulation
 }
 /* Ajuste fino de simetría en el bloque de búsqueda */
 .trip-filter-actions{margin-top:19px!important}
+
+/* Sala de espera por capacidad */
+.capacity-screen{position:fixed;inset:0;z-index:100000;display:grid;place-items:center;padding:24px;background:radial-gradient(ellipse at 50% 0%,rgba(0,113,227,.13),transparent 55%),var(--bg);overflow:auto}
+.capacity-card{width:min(100%,470px);padding:30px 24px;border:1px solid color-mix(in srgb,var(--line) 75%,transparent);border-radius:30px;background:color-mix(in srgb,var(--card) 88%,transparent);box-shadow:0 24px 80px rgba(0,0,0,.13);text-align:center;backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px)}
+.capacity-logo{width:58px;height:58px;object-fit:contain;margin:0 auto 14px}
+.capacity-card h1{font-size:clamp(25px,6vw,32px);line-height:1.12;margin:0 0 13px;letter-spacing:-.035em}
+.capacity-card>p{font-size:15px;line-height:1.55;color:var(--tx2);margin:0 auto 20px;max-width:370px}
+.capacity-pulse{width:10px;height:10px;border-radius:50%;background:var(--blue);display:inline-block;margin-right:8px;box-shadow:0 0 0 0 rgba(0,113,227,.35);animation:capacityPulse 1.8s infinite}
+@keyframes capacityPulse{70%{box-shadow:0 0 0 10px rgba(0,113,227,0)}100%{box-shadow:0 0 0 0 rgba(0,113,227,0)}}
+.capacity-status{font-size:13px;color:var(--tx2);margin:0 0 22px}
+.capacity-game{margin-top:22px;padding:17px;border-radius:22px;background:var(--fill);text-align:left}
+.capacity-game-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.capacity-game h2{font-size:17px;margin:0;letter-spacing:-.02em}
+.capacity-game p{font-size:12px;line-height:1.45;color:var(--tx2);margin:0 0 12px}
+.capacity-game-stats{font-size:12px;color:var(--tx2);font-weight:600}
+.capacity-game-field{height:150px;position:relative;overflow:hidden;border-radius:16px;background:color-mix(in srgb,var(--card) 70%,var(--blue) 7%);border:1px solid var(--line)}
+.capacity-target{position:absolute;width:43px;height:43px;border:0;border-radius:50%;background:linear-gradient(145deg,#53b5ff,#6656df);box-shadow:0 5px 18px rgba(0,113,227,.3);color:#fff;font-size:20px;cursor:pointer;touch-action:manipulation;animation:capacityTargetIn .2s ease-out}
+@keyframes capacityTargetIn{from{transform:scale(.5);opacity:.3}to{transform:scale(1);opacity:1}}
+.capacity-game-actions{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px}
+.capacity-game-actions small{font-size:11px;color:var(--tx2)}
+@media(max-width:420px){.capacity-card{padding:25px 18px;border-radius:25px}.capacity-game{padding:14px}}
+@media(prefers-reduced-motion:reduce){.capacity-pulse,.capacity-target{animation:none!important}}
 </style></head><body>
 <header class="nav"><div class="brand"><span class="lg"><img class="lg-l" src="logo-negro.png" alt="" width="64" height="64"><img class="lg-d" src="logo-blanco.png" alt="" width="64" height="64"></span><b>Holpin</b></div><nav id="tabs"></nav><button class="btn sec sm" id="bell" title="Activar avisos de mensajes nuevos" aria-label="Activar avisos" hidden>🔔</button><button class="avbtn" id="meBtn" aria-label="Perfil"></button></header>
 <main>
@@ -832,6 +854,20 @@ button,a,label{-webkit-tap-highlight-color:transparent;touch-action:manipulation
 <div class="meta" style="text-align:center;padding:0 0 28px;font-size:12px">Holpin · versión 1.1</div>
 </main>
 <datalist id="cities"><option>Buenos Aires</option><option>Córdoba</option><option>Rosario</option><option>Mendoza</option><option>La Plata</option><option>Mar del Plata</option><option>Tucumán</option><option>Salta</option><option>Santa Fe</option><option>Neuquén</option><option>Bariloche</option><option>Paraná</option><option>Posadas</option><option>Corrientes</option><option>San Luis</option><option>Bahía Blanca</option></datalist>
+<section class="capacity-screen" id="capacityScreen" hidden aria-live="polite">
+ <div class="capacity-card">
+  <img class="capacity-logo" src="icon-app.svg" alt="Holpin">
+  <h1>Holpin está al límite de capacidad</h1>
+  <p>La aplicación se encuentra al límite de capacidad de personas activas, por favor espere un momento para poder ingresar.</p>
+  <div class="capacity-status"><span class="capacity-pulse"></span><span id="capacityStatus">Estamos buscando un lugar para vos…</span></div>
+  <div class="capacity-game">
+   <div class="capacity-game-head"><h2>¿Jugamos mientras esperás?</h2><span class="capacity-game-stats" id="capacityScore">Puntos: 0</span></div>
+   <p>Tocá la burbuja tantas veces como puedas. Es opcional y no afecta tu lugar en la fila.</p>
+   <div class="capacity-game-field" id="capacityGameField"><button class="capacity-target" id="capacityTarget" type="button" hidden aria-label="Tocar burbuja">✦</button></div>
+   <div class="capacity-game-actions"><small id="capacityGameInfo">Tenés 20 segundos por partida.</small><button class="btn sm" id="capacityGameStart" type="button">Jugar</button></div>
+  </div>
+ </div>
+</section>
 <div class="ov" id="ov" hidden><div class="sheet" id="sheet"></div></div><div class="sug" id="sug" hidden></div><div id="toast"></div>
 <!-- PASO 1: pegá tus datos de Supabase ENTRE LAS COMILLAS (sin borrar las comillas) -->
 <script>
@@ -932,6 +968,17 @@ const live=()=>trips.filter(t=>!(t.soldOutAt&&Date.now()-t.soldOutAt>=H3));
 function left(t){const ms=H3-(Date.now()-t.soldOutAt);return Math.floor(ms/36e5)+' h '+Math.ceil((ms%36e5)/6e4)+' min'}
 const need=()=>{if(!uid){authSheet();return false}if(!profilesLoaded){toast('Estamos cargando tu perfil. Probá de nuevo en un momento.');return false}if(!meP()){profile(true);return false}return true};
 
+let capacityAdmitted=false,capacityChecking=false,capacityWaitTimer=null,capacityHeartbeatTimer=null,capacityChannel=null,capacityGameTimer=null,capacityGameScore=0,capacityGamePlaying=false,capacityGameSeconds=20;
+function stopCapacityTimers(){if(capacityWaitTimer){clearInterval(capacityWaitTimer);capacityWaitTimer=null}if(capacityHeartbeatTimer){clearInterval(capacityHeartbeatTimer);capacityHeartbeatTimer=null}}
+function showCapacityScreen(activeCount){const el=$('#capacityScreen');if(!el)return;el.hidden=false;$('#capacityStatus').textContent=activeCount?activeCount+' personas están usando Holpin ahora. Te avisaremos cuando haya lugar.':'Estamos buscando un lugar para vos…';if(!capacityWaitTimer)capacityWaitTimer=setInterval(()=>checkHolpinCapacity(false),12000)}
+function hideCapacityScreen(){const el=$('#capacityScreen');if(el)el.hidden=true;if(capacityWaitTimer){clearInterval(capacityWaitTimer);capacityWaitTimer=null}}
+function startCapacityHeartbeat(){if(capacityHeartbeatTimer)clearInterval(capacityHeartbeatTimer);capacityHeartbeatTimer=setInterval(async()=>{if(!uid||!capacityAdmitted)return;const {data,error}=await sb.rpc('holpin_capacity_admit');if(error){console.warn('No se pudo renovar la sesión de capacidad:',error.message);return}if(data&&!data.allowed){capacityAdmitted=false;stopCapacityTimers();if(capacityChannel){sb.removeChannel(capacityChannel);capacityChannel=null}showCapacityScreen(data.active_count)}},25000)}
+function startHolpinRealtime(){if(capacityChannel||!sb||!capacityAdmitted)return;capacityChannel=sb.channel('holpin').on('postgres_changes',{event:'*',schema:'public'},p=>{if(p.table==='messages'&&p.eventType==='INSERT'&&p.new&&uid&&p.new.to_id===uid)notify(p.new);load()}).subscribe()}
+async function checkHolpinCapacity(initial){if(!sb||!uid||capacityChecking)return;capacityChecking=true;try{const {data,error}=await sb.rpc('holpin_capacity_admit');if(error){console.error('No se pudo comprobar el cupo de Holpin. Aplicando acceso de contingencia:',error.message);capacityAdmitted=true;hideCapacityScreen();stopCapacityTimers();startCapacityHeartbeat();const loaded=await load();startHolpinRealtime();if(loaded&&profilesLoaded&&!meP()&&$('#ov').hidden)profile(true);return}
+ if(data&&data.allowed){capacityAdmitted=true;hideCapacityScreen();stopCapacityTimers();startCapacityHeartbeat();const loaded=await load();startHolpinRealtime();if(uid&&!pushOn)syncPush(false);if(!$('#ov').hidden&&$('#sheet').querySelector('#aE'))close();if(loaded&&profilesLoaded&&!meP()&&$('#ov').hidden)profile(true)}
+ else{capacityAdmitted=false;if(capacityHeartbeatTimer){clearInterval(capacityHeartbeatTimer);capacityHeartbeatTimer=null}if(capacityChannel){sb.removeChannel(capacityChannel);capacityChannel=null}showCapacityScreen(data&&data.active_count||0)}
+ }catch(e){console.error('Error comprobando capacidad:',e);if(initial){capacityAdmitted=true;hideCapacityScreen();const loaded=await load();startHolpinRealtime();if(loaded&&profilesLoaded&&!meP()&&$('#ov').hidden)profile(true)}}finally{capacityChecking=false}}
+function initCapacityGame(){const start=$('#capacityGameStart'),target=$('#capacityTarget'),field=$('#capacityGameField');if(!start||start.dataset.ready)return;start.dataset.ready='1';const move=()=>{const maxX=Math.max(0,field.clientWidth-48),maxY=Math.max(0,field.clientHeight-48);target.style.left=(Math.random()*maxX)+'px';target.style.top=(Math.random()*maxY)+'px'};const finish=()=>{capacityGamePlaying=false;clearInterval(capacityGameTimer);capacityGameTimer=null;target.hidden=true;start.disabled=false;start.textContent='Jugar otra vez';$('#capacityGameInfo').textContent='¡Terminaste! Conseguíste '+capacityGameScore+' puntos.'};start.addEventListener('click',()=>{if(capacityGamePlaying)return;capacityGameScore=0;capacityGameSeconds=20;capacityGamePlaying=true;start.disabled=true;start.textContent='Jugando…';$('#capacityScore').textContent='Puntos: 0';$('#capacityGameInfo').textContent='Tiempo: 20 s';target.hidden=false;move();clearInterval(capacityGameTimer);capacityGameTimer=setInterval(()=>{capacityGameSeconds--;$('#capacityGameInfo').textContent='Tiempo: '+capacityGameSeconds+' s';if(capacityGameSeconds<=0)finish()},1000)});target.addEventListener('click',()=>{if(!capacityGamePlaying)return;capacityGameScore++;$('#capacityScore').textContent='Puntos: '+capacityGameScore;move()})}
 let loadSeq=0;
 async function load(){
  const my=++loadSeq;
@@ -1461,13 +1508,10 @@ function boot(){
   else if(q.get('type')==='signup'){
    setTimeout(()=>toast('¡Cuenta confirmada!'),700);
    setTimeout(()=>{if(!uid){toast('Tu cuenta está lista. Iniciá sesión para continuar.');authSheet('login')}},3000)}}
- sb.auth.onAuthStateChange((ev,s)=>{uid=s&&s.user?s.user.id:null;profilesLoaded=false;
-  setTimeout(async()=>{const loaded=await load();
-   if(uid){if(!pushOn)syncPush(false);if(!$('#ov').hidden&&$('#sheet').querySelector('#aE'))close();if(loaded&&profilesLoaded&&!meP()&&$('#ov').hidden)profile(true)}},0)});
- sb.channel('holpin').on('postgres_changes',{event:'*',schema:'public'},p=>{
-  if(p.table==='messages'&&p.eventType==='INSERT'&&p.new&&uid&&p.new.to_id===uid)notify(p.new);
-  load()}).subscribe();
- setInterval(()=>{renderList();if(uid&&document.hidden)load()},15000)}
+ initCapacityGame();
+ sb.auth.onAuthStateChange((ev,s)=>{const nextUid=s&&s.user?s.user.id:null;uid=nextUid;profilesLoaded=false;
+  setTimeout(()=>{if(uid)checkHolpinCapacity(true);else{capacityAdmitted=false;stopCapacityTimers();hideCapacityScreen();if(capacityChannel){sb.removeChannel(capacityChannel);capacityChannel=null}load()}},0)});
+ setInterval(()=>{if(capacityAdmitted){renderList();if(uid&&document.hidden)load()}},15000)}
 const CITIES=['Buenos Aires','Córdoba','Rosario','Mendoza','La Plata','Mar del Plata','Tucumán','Salta','Santa Fe','Neuquén','Bariloche','Paraná','Posadas','Corrientes','San Luis','Bahía Blanca'];
 let sugEl=null;
 function sugShow(inp){
